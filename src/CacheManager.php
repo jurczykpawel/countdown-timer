@@ -4,18 +4,25 @@ declare(strict_types=1);
 /**
  * Filesystem cache for generated GIF timers + Cache-Control header management.
  *
- * Two cache partitions:
- *   ab/ — absolute timers (fixed target time, highly cacheable)
- *   ev/ — evergreen timers (relative to "now", bucketed)
+ * Cache partitions:
+ *   ab/       — absolute timers (fixed target time)
+ *   ev/       — evergreen timers (relative to "now")
+ *   expired/  — expired timers (always 00:00:00, long TTL)
+ *
+ * Bucketing: all GIFs are bucketed by frame count. A GIF with N frames
+ * covers N seconds of countdown. After N seconds the GIF loops back to
+ * stale first-frame values, so a new GIF must be generated.
  */
 final class CacheManager
 {
     private string $baseDir;
     private string $cacheKey = '';
     private bool $isEvergreen = false;
-    private int $bucketInterval = 10;
+    private int $bucketInterval = 30;
     private int $frames = 30;
     private int $targetTimestamp = 0;
+    private bool $isExpired = false;
+    private int $bucketedNow = 0;
 
     public function __construct(string $baseDir = '/var/cache/timer-gif')
     {
@@ -24,7 +31,9 @@ final class CacheManager
 
     /**
      * Compute cache key from normalized parameters.
-     * For evergreen timers, buckets "now" to reduce unique keys.
+     *
+     * Key includes a time bucket so the GIF refreshes every N seconds.
+     * Expired timers use a separate partition with no bucket (stable key).
      *
      * @return string Full path to cached GIF file
      */
@@ -32,39 +41,51 @@ final class CacheManager
     {
         $this->frames = max(1, min(120, (int)($params['seconds'] ?? 30)));
         $this->isEvergreen = !empty($params['evergreen']);
-
-        // Bucket interval = frame count. A GIF with N frames covers N seconds
-        // of countdown. After N seconds the GIF loops back to stale values,
-        // so we must regenerate. Bucketing "now" to frame-count intervals
-        // ensures all requests within one loop window share the same GIF.
         $this->bucketInterval = $this->frames;
 
-        $bucketedNow = (int)(floor(time() / $this->bucketInterval) * $this->bucketInterval);
+        $now = time();
+        $this->bucketedNow = (int)(floor($now / $this->bucketInterval) * $this->bucketInterval);
 
         if ($this->isEvergreen) {
             $evergreenSeconds = self::parseDurationToSeconds($params['evergreen']);
-            $this->targetTimestamp = $bucketedNow + $evergreenSeconds;
+            $this->targetTimestamp = $this->bucketedNow + $evergreenSeconds;
         } else {
             $this->targetTimestamp = (int)strtotime($params['time'] ?? 'now');
         }
 
-        // Build cache key with current time bucket so GIF refreshes every N frames
-        $keyParams = $params;
-        unset($keyParams['evergreen'], $keyParams['relative'], $keyParams['preset']);
-        $keyParams['_bucket'] = (string)$bucketedNow;
+        // Check if timer is already expired
+        $this->isExpired = ($this->targetTimestamp <= $now);
 
-        // Normalize: sort keys, build deterministic string
+        // Build cache key
+        $keyParams = $params;
+        unset($keyParams['preset']); // already merged by Presets::apply()
+
+        if ($this->isExpired) {
+            // Expired timers always show 00:00:00 — no bucket needed, stable key.
+            // Remove time-varying params so all expired requests share one GIF.
+            unset($keyParams['evergreen'], $keyParams['relative']);
+            $keyParams['_expired'] = '1';
+        } else {
+            // Active timers: include bucket + normalized evergreen duration in key
+            unset($keyParams['relative']); // alias, keep 'evergreen' for key uniqueness
+            $keyParams['_bucket'] = (string)$this->bucketedNow;
+        }
+
         ksort($keyParams);
         $this->cacheKey = hash('sha256', http_build_query($keyParams));
 
-        $subdir = $this->isEvergreen ? 'ev' : 'ab';
+        if ($this->isExpired) {
+            $subdir = 'expired';
+        } else {
+            $subdir = $this->isEvergreen ? 'ev' : 'ab';
+        }
         $prefix = substr($this->cacheKey, 0, 2);
 
         return $this->baseDir . '/' . $subdir . '/' . $prefix . '/' . $this->cacheKey . '.gif';
     }
 
     /**
-     * Try to serve from cache. Returns true if served (and exits), false if miss.
+     * Try to serve from cache. Returns true if served, false if miss.
      */
     public function tryServe(string $cachePath): bool
     {
@@ -72,11 +93,17 @@ final class CacheManager
             return false;
         }
 
-        $age = time() - (int)filemtime($cachePath);
-        $maxAge = $this->bucketInterval;
-
-        if ($age >= $maxAge) {
-            return false; // stale
+        if ($this->isExpired) {
+            // Expired GIFs are always valid (content never changes)
+            $maxAge = 86400;
+        } else {
+            // Active GIFs: valid until the current bucket expires
+            $timeToBucketEnd = $this->bucketInterval - (time() - $this->bucketedNow);
+            $maxAge = max(1, $timeToBucketEnd);
+            $age = time() - (int)filemtime($cachePath);
+            if ($age >= $this->bucketInterval) {
+                return false; // file is from a previous bucket
+            }
         }
 
         header('Content-Type: image/gif');
@@ -104,18 +131,20 @@ final class CacheManager
 
     /**
      * Set Cache-Control headers for Cloudflare and browser caching.
+     *
+     * TTL is set to the time remaining until the current bucket expires,
+     * NOT the full bucket interval. This prevents CDN from caching past
+     * the bucket boundary.
      */
     public function setCacheHeaders(): void
     {
-        $remaining = max(0, $this->targetTimestamp - time());
-
-        if ($remaining <= 0) {
-            // Timer expired - always shows 00:00:00, cache long
+        if ($this->isExpired) {
             header('Cache-Control: public, max-age=86400, s-maxage=86400, immutable');
         } else {
-            // TTL = bucket interval (= frame count). After one loop the GIF
-            // is stale and must be regenerated with fresh countdown values.
-            $ttl = min($this->bucketInterval, $remaining);
+            $remaining = max(0, $this->targetTimestamp - time());
+            $timeToBucketEnd = max(1, $this->bucketInterval - (time() - $this->bucketedNow));
+            $ttl = min($timeToBucketEnd, $remaining);
+            $ttl = max(1, $ttl);
             header("Cache-Control: public, max-age={$ttl}, s-maxage={$ttl}");
         }
 
@@ -132,14 +161,13 @@ final class CacheManager
         $s = strtolower(trim($spec));
         $pattern = '/(\d+)\s*(d|day|days|h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)/i';
         if (!preg_match_all($pattern, $s, $m, PREG_SET_ORDER)) {
-            // Try as plain seconds
             return max(0, (int)$s);
         }
 
         $total = 0;
         foreach ($m as $match) {
             $num = (int)$match[1];
-            $unit = $match[2][0]; // first char: d, h, m, s
+            $unit = $match[2][0];
             $total += match ($unit) {
                 'd' => $num * 86400,
                 'h' => $num * 3600,
