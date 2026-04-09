@@ -10,13 +10,15 @@ declare(strict_types=1);
  *   GET /?preset=...   -> Generated countdown GIF with preset
  *   GET /?evergreen=.. -> Evergreen countdown GIF
  *
- * Layers: Rate Limiter -> Cache Check -> GIF Generation -> Cache Write -> Serve
+ * Layers: API Key -> Rate Limiter -> UID resolve -> Cache Check -> GIF Generation -> Cache Write -> Serve
  */
 
 require_once __DIR__ . '/src/Presets.php';
 require_once __DIR__ . '/src/CacheManager.php';
 require_once __DIR__ . '/src/RateLimiter.php';
 require_once __DIR__ . '/src/CountdownTimer.php';
+require_once __DIR__ . '/src/UidStore.php';
+require_once __DIR__ . '/src/ApiKeyAuth.php';
 
 // =========================================================================
 // Landing page: no timer params = serve HTML
@@ -37,7 +39,25 @@ if (!$hasTimerParam) {
 }
 
 // =========================================================================
-// Rate limiting
+// API key authentication
+// =========================================================================
+$apiKey = $_GET['key'] ?? null;
+if ($apiKey === null || $apiKey === '') {
+    ApiKeyAuth::denyMissingKey();
+}
+
+$auth = new ApiKeyAuth();
+$keyConfig = $auth->validate($apiKey);
+if ($keyConfig === null) {
+    ApiKeyAuth::denyInvalidKey();
+}
+
+if (!$auth->checkQuota($apiKey, $keyConfig)) {
+    ApiKeyAuth::denyQuotaExceeded((int)($keyConfig['limit'] ?? 0));
+}
+
+// =========================================================================
+// Rate limiting (per IP, on top of per-key quota)
 // =========================================================================
 $rateLimiter = new RateLimiter('/var/cache/timer-gif/ratelimit', 30);
 if (!$rateLimiter->check(RateLimiter::clientIp())) {
@@ -76,6 +96,7 @@ $rawParams = [
     'sepColor'     => $_GET['sepColor'] ?? null,
     'labelColor'   => $_GET['labelColor'] ?? null,
 ];
+// Note: 'key' and 'uid' are NOT in rawParams — they don't affect GIF output
 
 // Apply preset defaults (user params override)
 $params = Presets::apply($rawParams);
@@ -87,6 +108,20 @@ $params['seconds'] = max(1, min(120, (int)($params['seconds'] ?? 30)));
 $params['boxColor'] = $params['boxColor'] ?? '000';
 $params['fontColor'] = $params['fontColor'] ?? 'fff';
 $params['font'] = $params['font'] ?? 'BebasNeue';
+
+// =========================================================================
+// UID-based evergreen: resolve persistent deadline
+// =========================================================================
+$uid = $_GET['uid'] ?? null;
+if ($uid !== null && $uid !== '' && !empty($params['evergreen'])) {
+    $uidStore = new UidStore();
+    $evergreenSeconds = CacheManager::parseDurationToSeconds((string)$params['evergreen']);
+    $deadline = $uidStore->getOrCreate($uid, $evergreenSeconds);
+
+    // Convert evergreen to absolute time (persistent)
+    $params['time'] = date('Y-m-d\TH:i:s', $deadline);
+    unset($params['evergreen']);
+}
 
 // =========================================================================
 // Cache check

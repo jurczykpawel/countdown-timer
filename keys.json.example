@@ -1,0 +1,12 @@
+{
+    "tk_master_CHANGE_ME": {
+        "name": "Master (Pawel)",
+        "limit": 0,
+        "active": true
+    },
+    "tk_free_EXAMPLE": {
+        "name": "Free tier example",
+        "limit": 1000,
+        "active": true
+    }
+}

@@ -11,6 +11,9 @@ Thumbs.db
 .vscode/
 *.swp
 
+# Secrets
+keys.json
+
 # Old files (replaced by modular structure)
 /countdown.php
 /GIFEncoder.class.php
