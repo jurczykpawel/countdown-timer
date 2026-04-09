@@ -536,11 +536,12 @@ footer {
       </div>
     </div>
 
-    <div class="code-block"><span class="comment"># 1. Clone and configure</span>
+    <div class="code-block"><span class="comment"># 1. Clone and generate API key</span>
 <span class="cmd">git clone</span> https://github.com/jurczykpawel/countdown-timer.git
 <span class="cmd">cd</span> countdown-timer
-<span class="cmd">cp</span> keys.json.example keys.json
-<span class="comment"># Edit keys.json - add your API key</span>
+KEY="tk_master_$(openssl rand -hex 16)" &amp;&amp; \
+  echo "{\"$KEY\":{\"name\":\"Master\",\"limit\":0,\"active\":true}}" \
+  | python3 -m json.tool > keys.json &amp;&amp; echo "Your key: $KEY"
 
 <span class="comment"># 2. Create cache directories</span>
 <span class="cmd">sudo mkdir -p</span> /var/cache/timer-gif/{ab,ev,uid,apikeys,ratelimit}
