@@ -188,9 +188,10 @@ final class CacheManager
         if (time() - $lastCheck < 300) return;
         $lastCheck = time();
 
-        $sizeMb = (int)trim((string)@shell_exec("du -sm {$baseDir} 2>/dev/null | cut -f1"));
+        $safeDir = escapeshellarg($baseDir);
+        $sizeMb = (int)trim((string)@shell_exec("du -sm {$safeDir} 2>/dev/null | cut -f1"));
         if ($sizeMb > $maxMb) {
-            @shell_exec("find {$baseDir} -name '*.gif' -mmin +60 -delete 2>/dev/null &");
+            @shell_exec("find {$safeDir} -name '*.gif' -mmin +60 -delete 2>/dev/null &");
         }
     }
 }

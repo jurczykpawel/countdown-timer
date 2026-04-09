@@ -76,7 +76,10 @@ final class ApiKeyAuth
             return false;
         }
 
-        @file_put_contents($counterFile, (string)($current + 1));
+        // Fail closed: if counter can't be written, deny request
+        if (@file_put_contents($counterFile, (string)($current + 1)) === false) {
+            return false;
+        }
         return true;
     }
 

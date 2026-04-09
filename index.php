@@ -44,9 +44,11 @@ if (!$hasTimerParam) {
 // Internal preview key for landing page demos (limited: max 5 frames, 480px width)
 $isPreview = isset($_GET['_preview']) && $_GET['_preview'] === '1';
 if ($isPreview) {
-    // Force safe limits for preview
+    // Force safe limits for preview — no external resources
     $_GET['seconds'] = min((int)($_GET['seconds'] ?? 5), 5);
     $_GET['width'] = min((int)($_GET['width'] ?? 480), 480);
+    $_GET['height'] = min((int)($_GET['height'] ?? 140), 200);
+    unset($_GET['bgImage']); // block SSRF via preview
     $apiKey = '__preview__';
 } else {
     $apiKey = $_GET['key'] ?? null;
@@ -146,8 +148,15 @@ if ($cache->tryServe($cachePath)) {
 // =========================================================================
 // Generate GIF
 // =========================================================================
-$timer = new CountdownTimer();
-$gifData = $timer->generate($params);
+try {
+    $timer = new CountdownTimer();
+    $gifData = $timer->generate($params);
+} catch (\Throwable $e) {
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'GIF generation failed', 'detail' => $e->getMessage()]);
+    exit;
+}
 
 // =========================================================================
 // Cache write + serve

@@ -128,14 +128,21 @@ class CountdownTimer
             ? $s['bgFit'] : 'cover';
         $this->bgImagePath = (!empty($s['bgImage']) && is_string($s['bgImage'])) ? $s['bgImage'] : null;
 
-        // Font
+        // Font — validate existence, fail with error GIF if no font available
         $this->fontDir = dirname(__DIR__) . '/fonts/';
         $fontName = preg_match('/^[A-Za-z0-9_\-]+$/', (string)($s['font'] ?? ''))
             ? (string)$s['font'] : 'BebasNeue';
         $this->fontPath = $this->fontDir . $fontName . '.ttf';
         if (!file_exists($this->fontPath)) {
-            $fallback = $this->fontDir . 'BebasNeue.ttf';
-            $this->fontPath = file_exists($fallback) ? $fallback : $this->fontDir . 'DejaVuSans.ttf';
+            $this->fontPath = $this->fontDir . 'BebasNeue.ttf';
+        }
+        if (!file_exists($this->fontPath)) {
+            // Last resort: find any .ttf in fonts dir
+            $ttfs = glob($this->fontDir . '*.ttf');
+            $this->fontPath = $ttfs[0] ?? '';
+        }
+        if ($this->fontPath === '' || !file_exists($this->fontPath)) {
+            throw new \RuntimeException('No font files found in fonts/ directory');
         }
 
         // Time
@@ -173,14 +180,10 @@ class CountdownTimer
 
     private function computeLayout(): void
     {
-        $this->autoLayout = ($this->fontSize <= 0) || !$this->xProvided
-            || !$this->yProvided;
-
-        if ($this->autoLayout) {
-            $this->computeAutoLayout();
-        } else {
-            $this->labelFontSize = max(6, (int)round($this->fontSize * 0.33));
-        }
+        // Always compute auto layout for centers, boxes, and label positions.
+        // User-provided fontSize/xOffset/yOffset are respected inside computeAutoLayout
+        // but we always need centers for renderFrame.
+        $this->computeAutoLayout();
 
         // Prepare background image once
         $this->preparedBg = imagecreatetruecolor($this->width, $this->height);
@@ -238,8 +241,10 @@ class CountdownTimer
             $secs = (int)$interval->format('%s');
 
             if ($days > 0) {
+                // Days can be >99 — use minimum width, not fixed 2 digits
+                $dayFmt = $days >= 100 ? '%d' : '%02d';
                 $groups = [
-                    sprintf('%02d', $days),
+                    sprintf($dayFmt, $days),
                     sprintf('%02d', $hours),
                     sprintf('%02d', $mins),
                     sprintf('%02d', $secs),
@@ -266,30 +271,36 @@ class CountdownTimer
         $centers = ($partsCount === 4 && !empty($this->labelCenters4))
             ? $this->labelCenters4 : $this->labelCenters3;
 
-        // Draw digit groups
+        // Draw digit groups (use cached '00' width — all 2-digit groups are same width)
         foreach ($groups as $i => $groupText) {
             if (!isset($centers[$i])) continue;
             $center = $centers[$i];
 
-            // Measure group text
-            $bbox = imagettfbbox($this->fontSize, 0, $this->fontPath, $groupText);
-            $gw = (int)ceil(max($bbox[2], $bbox[4]) - min($bbox[0], $bbox[6]));
+            // Cache text width per unique string to avoid repeated imagettfbbox
+            if (!isset($this->labelWidths['_d:' . $groupText])) {
+                $bbox = imagettfbbox($this->fontSize, 0, $this->fontPath, $groupText);
+                $this->labelWidths['_d:' . $groupText] = (int)ceil(max($bbox[2], $bbox[4]) - min($bbox[0], $bbox[6]));
+            }
+            $gw = $this->labelWidths['_d:' . $groupText];
             $gx = (int)round($center - $gw / 2);
 
             imagettftext($image, $this->fontSize, 0, $gx, $this->yOffset, $textColor, $this->fontPath, $groupText);
         }
 
-        // Draw separators between groups
+        // Draw separators between groups (metrics cached once)
         if ($this->separator !== '' && count($groups) > 1) {
             $sepFontSize = max(6, (int)round($this->fontSize * 0.7));
-            $sepBbox = imagettfbbox($sepFontSize, 0, $this->fontPath, $this->separator);
-            $sepW = (int)ceil(max($sepBbox[2], $sepBbox[4]) - min($sepBbox[0], $sepBbox[6]));
+            if (!isset($this->labelWidths['_sep'])) {
+                $sepBbox = imagettfbbox($sepFontSize, 0, $this->fontPath, $this->separator);
+                $this->labelWidths['_sep'] = (int)ceil(max($sepBbox[2], $sepBbox[4]) - min($sepBbox[0], $sepBbox[6]));
+                $this->labelWidths['_sepY'] = $this->yOffset - (int)round($this->characterHeight * 0.15);
+            }
+            $sepW = $this->labelWidths['_sep'];
+            $sepY = $this->labelWidths['_sepY'];
 
             for ($i = 0; $i < count($groups) - 1; $i++) {
                 if (!isset($centers[$i], $centers[$i + 1])) continue;
                 $midX = (int)round(($centers[$i] + $centers[$i + 1]) / 2 - $sepW / 2);
-                // Vertical center between digit top and baseline
-                $sepY = $this->yOffset - (int)round($this->characterHeight * 0.15);
                 imagettftext($image, $sepFontSize, 0, $midX, $sepY, $sepTextColor, $this->fontPath, $this->separator);
             }
         }
@@ -308,8 +319,21 @@ class CountdownTimer
             imagettftext($image, $this->labelFontSize, 0, $labelX, $labelsY, $labelTextColor, $this->fontPath, $label);
         }
 
-        // Reduce palette for smaller GIF
-        imagetruecolortopalette($image, false, 64);
+        // Reduce palette for smaller GIF.
+        // For transparent GIFs, preserve the chroma key color in the palette.
+        if ($this->transparentBg) {
+            // Force the chroma key into the palette by allocating it first
+            imagetruecolortopalette($image, false, 63); // 63 + 1 reserved for key
+            $keyIdx = imagecolorexact($image, ...$this->transparentKey);
+            if ($keyIdx === -1) {
+                $keyIdx = imagecolorallocate($image, ...$this->transparentKey);
+            }
+            if ($keyIdx !== -1) {
+                imagecolortransparent($image, $keyIdx);
+            }
+        } else {
+            imagetruecolortopalette($image, false, 64);
+        }
 
         ob_start();
         imagegif($image);
@@ -445,11 +469,24 @@ class CountdownTimer
     {
         $paddingX = (int)round($this->width * 0.04);
         $paddingY = (int)round($this->height * 0.06);
-        $targetText = $this->initialShowDays ? '00:00:00:00' : '00:00:00';
         $groupCount = $this->initialShowDays ? 4 : 3;
+        // Use widest expected text for layout measurement.
+        // Days can be 3 digits (e.g. 365), so measure with '000' if >99 days.
+        $interval0 = date_diff($this->date['futureDate'], $this->date['now']);
+        $dayCount = (int)$interval0->format('%a');
+        $dayDigits = $dayCount >= 100 ? '000' : '00';
+        $targetText = $this->initialShowDays
+            ? "{$dayDigits}:00:00:00"
+            : '00:00:00';
 
         // Binary search for max font size
-        $bbox = fn(int $size, string $text) => imagettfbbox($size, 0, $this->fontPath, $text);
+        $bbox = function(int $size, string $text): array {
+            $result = @imagettfbbox($size, 0, $this->fontPath, $text);
+            if ($result === false) {
+                return [0, 0, $size, 0, $size, -$size, 0, -$size]; // fallback box
+            }
+            return $result;
+        };
         $dim = function (array $bb): array {
             $xs = [$bb[0], $bb[2], $bb[4], $bb[6]];
             $ys = [$bb[1], $bb[3], $bb[5], $bb[7]];
@@ -646,21 +683,50 @@ class CountdownTimer
     private function loadImageAny(string $path)
     {
         if (preg_match('~^https?://~i', $path)) {
+            // SSRF protection: block private/internal IPs
+            $host = parse_url($path, PHP_URL_HOST);
+            if ($host === false || $host === null) return null;
+            $ips = gethostbynamel($host) ?: [];
+            foreach ($ips as $ip) {
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
+                    return null; // private/reserved IP blocked
+                }
+            }
+
             $ctx = stream_context_create([
-                'http' => ['timeout' => 2, 'max_redirects' => 2, 'user_agent' => 'CountdownTimer/2.0'],
-                'https' => ['timeout' => 2, 'max_redirects' => 2, 'user_agent' => 'CountdownTimer/2.0'],
+                'http' => [
+                    'timeout' => 2,
+                    'max_redirects' => 0,   // block redirects (redirect-based SSRF)
+                    'follow_location' => 0,
+                    'user_agent' => 'CountdownTimer/2.0',
+                ],
+                'https' => [
+                    'timeout' => 2,
+                    'max_redirects' => 0,
+                    'follow_location' => 0,
+                    'user_agent' => 'CountdownTimer/2.0',
+                ],
             ]);
             $data = @file_get_contents($path, false, $ctx);
-            return $data !== false ? (@imagecreatefromstring($data) ?: null) : null;
+            if ($data === false) return null;
+            // Size limit: 2MB max for background images
+            if (strlen($data) > 2 * 1024 * 1024) return null;
+            return @imagecreatefromstring($data) ?: null;
         }
-        $real = preg_match('~^/|^[A-Za-z]:\\~', $path) ? $path : (dirname(__DIR__) . '/' . ltrim($path, '/'));
+
+        // Local file: restrict to project images/ directory only
+        $basePath = dirname(__DIR__) . '/images/';
+        $real = realpath($basePath . basename($path));
+        if ($real === false || !str_starts_with($real, realpath($basePath) ?: '')) {
+            return null; // path traversal blocked
+        }
         if (!file_exists($real)) return null;
         $type = @exif_imagetype($real);
         return match ($type) {
             IMAGETYPE_PNG  => @imagecreatefrompng($real),
             IMAGETYPE_JPEG => @imagecreatefromjpeg($real),
             IMAGETYPE_GIF  => @imagecreatefromgif($real),
-            default        => (($d = @file_get_contents($real)) ? @imagecreatefromstring($d) : null),
+            default        => null, // don't fallback to file_get_contents for unknown types
         };
     }
 

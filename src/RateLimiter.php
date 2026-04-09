@@ -15,15 +15,23 @@ final class RateLimiter
         $this->dir = $cacheDir;
         $this->maxPerMinute = $maxPerMinute;
         if (!is_dir($this->dir)) {
-            @mkdir($this->dir, 0755, true);
+            if (!@mkdir($this->dir, 0755, true) && !is_dir($this->dir)) {
+                // Fail closed: if we can't track, deny all
+                $this->dir = '';
+            }
         }
     }
 
     /**
      * Check if request is allowed. Returns true if OK, false if rate limited.
+     * Fails CLOSED: if storage is unavailable, denies the request.
      */
     public function check(string $ip): bool
     {
+        if ($this->dir === '' || !is_writable($this->dir)) {
+            return false; // fail closed
+        }
+
         $key = md5($ip);
         $file = $this->dir . '/' . $key;
         $window = (int)floor(time() / 60);
@@ -38,13 +46,17 @@ final class RateLimiter
                     if ($count >= $this->maxPerMinute) {
                         return false;
                     }
-                    @file_put_contents($file, $window . ':' . ($count + 1));
+                    if (@file_put_contents($file, $window . ':' . ($count + 1)) === false) {
+                        return false; // fail closed on write error
+                    }
                     return true;
                 }
             }
         }
 
-        @file_put_contents($file, $window . ':1');
+        if (@file_put_contents($file, $window . ':1') === false) {
+            return false; // fail closed
+        }
         return true;
     }
 
@@ -61,12 +73,13 @@ final class RateLimiter
     }
 
     /**
-     * Get real client IP (Cloudflare-aware).
+     * Get real client IP. Only trusts CF-Connecting-IP (set by Cloudflare,
+     * cannot be spoofed by end users). Falls back to REMOTE_ADDR (TCP source IP).
+     * NEVER trust X-Forwarded-For — it can be set by anyone.
      */
     public static function clientIp(): string
     {
         return $_SERVER['HTTP_CF_CONNECTING_IP']
-            ?? $_SERVER['HTTP_X_FORWARDED_FOR']
             ?? $_SERVER['REMOTE_ADDR']
             ?? '0.0.0.0';
     }
