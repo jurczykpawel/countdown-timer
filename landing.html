@@ -41,48 +41,64 @@ a:hover{text-decoration:underline}
 <div class="presets">
   <div class="preset-card">
     <h3>dark-boxes</h3>
-    <img src="?preset=dark-boxes&evergreen=1d+2h+30m&seconds=5&width=480&height=120" alt="dark-boxes preset" loading="lazy">
-    <code>?preset=dark-boxes&amp;time=2026-12-25T00:00:00</code>
+    <img src="?preset=dark-boxes&evergreen=1d+2h+30m&seconds=5&width=480&height=120&_preview=1" alt="dark-boxes preset" loading="lazy">
+    <code>?preset=dark-boxes&amp;time=2026-12-25T00:00:00&amp;key=YOUR_KEY</code>
   </div>
   <div class="preset-card">
     <h3>gradient-cards</h3>
-    <img src="?preset=gradient-cards&evergreen=1d+2h+30m&seconds=5&width=480&height=120" alt="gradient-cards preset" loading="lazy">
-    <code>?preset=gradient-cards&amp;evergreen=2h</code>
+    <img src="?preset=gradient-cards&evergreen=1d+2h+30m&seconds=5&width=480&height=120&_preview=1" alt="gradient-cards preset" loading="lazy">
+    <code>?preset=gradient-cards&amp;evergreen=2h&amp;key=YOUR_KEY</code>
   </div>
   <div class="preset-card">
     <h3>minimal-light</h3>
-    <img src="?preset=minimal-light&evergreen=1d+2h+30m&seconds=5&width=480&height=120" alt="minimal-light preset" loading="lazy">
-    <code>?preset=minimal-light&amp;time=2026-12-25T00:00:00</code>
+    <img src="?preset=minimal-light&evergreen=1d+2h+30m&seconds=5&width=480&height=120&_preview=1" alt="minimal-light preset" loading="lazy">
+    <code>?preset=minimal-light&amp;time=2026-12-25T00:00:00&amp;key=YOUR_KEY</code>
   </div>
   <div class="preset-card">
     <h3>bold-color</h3>
-    <img src="?preset=bold-color&evergreen=1d+2h+30m&seconds=5&width=480&height=100" alt="bold-color preset" loading="lazy">
-    <code>?preset=bold-color&amp;evergreen=30m</code>
+    <img src="?preset=bold-color&evergreen=1d+2h+30m&seconds=5&width=480&height=100&_preview=1" alt="bold-color preset" loading="lazy">
+    <code>?preset=bold-color&amp;evergreen=30m&amp;key=YOUR_KEY</code>
   </div>
   <div class="preset-card">
     <h3>transparent</h3>
-    <img src="?preset=transparent&evergreen=1d+2h+30m&seconds=5&width=480&height=100" alt="transparent preset" loading="lazy" style="background:#333;border-radius:6px">
-    <code>?preset=transparent&amp;time=2026-12-25T00:00:00</code>
+    <img src="?preset=transparent&evergreen=1d+2h+30m&seconds=5&width=480&height=100&_preview=1" alt="transparent preset" loading="lazy" style="background:#333;border-radius:6px">
+    <code>?preset=transparent&amp;time=2026-12-25T00:00:00&amp;key=YOUR_KEY</code>
   </div>
 </div>
+
+<h2>Authentication</h2>
+<p>All GIF generation requires an API key. Add <code style="background:#1a1a2e;padding:2px 6px;border-radius:4px">&amp;key=YOUR_KEY</code> to every request.</p>
+<div class="example">
+<code>&lt;img src="https://timer.sellf.app/?preset=dark-boxes&amp;time=2026-12-25T00:00:00&amp;key=YOUR_KEY" alt="Countdown"&gt;</code>
+</div>
+<p style="margin-top:8px;color:#888">Keys have daily quotas. Master keys are unlimited.</p>
 
 <h2>Usage</h2>
 <p>Embed in any HTML (emails, landing pages, websites):</p>
 <div class="example">
-<code>&lt;img src="https://timer.sellf.app/?preset=dark-boxes&amp;time=2026-12-25T00:00:00" alt="Countdown"&gt;</code>
+<code>&lt;img src="https://timer.sellf.app/?preset=dark-boxes&amp;time=2026-12-25T00:00:00&amp;key=YOUR_KEY" alt="Countdown"&gt;</code>
 </div>
 <p style="margin-top:12px">For emails, use absolute time. For landing pages, evergreen timers work great:</p>
 <div class="example">
-<code>&lt;img src="https://timer.sellf.app/?preset=gradient-cards&amp;evergreen=2h" alt="Countdown"&gt;</code>
+<code>&lt;img src="https://timer.sellf.app/?preset=gradient-cards&amp;evergreen=2h&amp;key=YOUR_KEY" alt="Countdown"&gt;</code>
 </div>
+
+<h2>Persistent Evergreen (UID)</h2>
+<p>Normal evergreen timers reset on every page load. To make the deadline persistent per user, add a <code style="background:#1a1a2e;padding:2px 6px;border-radius:4px">uid</code> parameter:</p>
+<div class="example">
+<code>&lt;img src="https://timer.sellf.app/?preset=dark-boxes&amp;evergreen=2h&amp;uid=USER_123&amp;key=YOUR_KEY" alt="Countdown"&gt;</code>
+</div>
+<p style="margin-top:8px;color:#888">First request with a UID saves the deadline. All subsequent requests with the same UID count down to the same moment, regardless of when the page is opened.</p>
 
 <h2>Parameters</h2>
 <div class="params">
 <table>
 <tr><th>Parameter</th><th>Description</th><th>Default</th></tr>
+<tr><td>key</td><td>API key (required for all GIF requests)</td><td>-</td></tr>
 <tr><td>preset</td><td>Named preset (dark-boxes, gradient-cards, minimal-light, bold-color, transparent)</td><td>-</td></tr>
 <tr><td>time</td><td>Absolute target datetime (e.g. 2026-12-25T00:00:00)</td><td>now</td></tr>
 <tr><td>evergreen</td><td>Relative duration (e.g. 2h, 1d+2h+30m, 30m)</td><td>-</td></tr>
+<tr><td>uid</td><td>Unique ID for persistent evergreen (deadline saved on first request)</td><td>-</td></tr>
 <tr><td>tz</td><td>Timezone (e.g. Europe/Warsaw)</td><td>UTC</td></tr>
 <tr><td>width</td><td>Image width in pixels</td><td>640</td></tr>
 <tr><td>height</td><td>Image height in pixels</td><td>140</td></tr>

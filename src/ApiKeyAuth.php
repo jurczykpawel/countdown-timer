@@ -35,6 +35,11 @@ final class ApiKeyAuth
      */
     public function validate(string $key): ?array
     {
+        // Built-in preview key for landing page demos
+        if ($key === '__preview__') {
+            return ['name' => 'Landing preview', 'limit' => 0, 'active' => true];
+        }
+
         $keys = $this->loadKeys();
         if (!isset($keys[$key])) {
             return null;

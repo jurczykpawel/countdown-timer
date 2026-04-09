@@ -41,7 +41,17 @@ if (!$hasTimerParam) {
 // =========================================================================
 // API key authentication
 // =========================================================================
-$apiKey = $_GET['key'] ?? null;
+// Internal preview key for landing page demos (limited: max 5 frames, 480px width)
+$isPreview = isset($_GET['_preview']) && $_GET['_preview'] === '1';
+if ($isPreview) {
+    // Force safe limits for preview
+    $_GET['seconds'] = min((int)($_GET['seconds'] ?? 5), 5);
+    $_GET['width'] = min((int)($_GET['width'] ?? 480), 480);
+    $apiKey = '__preview__';
+} else {
+    $apiKey = $_GET['key'] ?? null;
+}
+
 if ($apiKey === null || $apiKey === '') {
     ApiKeyAuth::denyMissingKey();
 }
