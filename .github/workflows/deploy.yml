@@ -1,0 +1,22 @@
+name: Deploy to Mikrus
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.MIKRUS_HOST }}
+          username: ${{ secrets.MIKRUS_USER }}
+          key: ${{ secrets.MIKRUS_SSH_KEY }}
+          port: ${{ secrets.MIKRUS_PORT }}
+          script: |
+            cd /var/www/timer
+            git fetch origin main
+            git reset --hard origin/main
+            chown -R www-data:www-data /var/www/timer
