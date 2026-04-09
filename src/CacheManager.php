@@ -33,29 +33,25 @@ final class CacheManager
         $this->frames = max(1, min(120, (int)($params['seconds'] ?? 30)));
         $this->isEvergreen = !empty($params['evergreen']);
 
-        if ($this->isEvergreen) {
-            // Bucket interval based on frame count
-            $this->bucketInterval = match (true) {
-                $this->frames <= 30  => 10,
-                $this->frames <= 60  => 15,
-                default              => 30,
-            };
+        // Bucket interval = frame count. A GIF with N frames covers N seconds
+        // of countdown. After N seconds the GIF loops back to stale values,
+        // so we must regenerate. Bucketing "now" to frame-count intervals
+        // ensures all requests within one loop window share the same GIF.
+        $this->bucketInterval = $this->frames;
 
-            $bucketedNow = (int)(floor(time() / $this->bucketInterval) * $this->bucketInterval);
+        $bucketedNow = (int)(floor(time() / $this->bucketInterval) * $this->bucketInterval);
+
+        if ($this->isEvergreen) {
             $evergreenSeconds = self::parseDurationToSeconds($params['evergreen']);
             $this->targetTimestamp = $bucketedNow + $evergreenSeconds;
-
-            // Replace evergreen with computed target for key normalization
-            $keyParams = $params;
-            unset($keyParams['evergreen'], $keyParams['relative']);
-            $keyParams['_target'] = (string)$this->targetTimestamp;
         } else {
-            $keyParams = $params;
             $this->targetTimestamp = (int)strtotime($params['time'] ?? 'now');
         }
 
-        // Remove params that don't affect output
-        unset($keyParams['preset']); // already merged into params by Presets::apply()
+        // Build cache key with current time bucket so GIF refreshes every N frames
+        $keyParams = $params;
+        unset($keyParams['evergreen'], $keyParams['relative'], $keyParams['preset']);
+        $keyParams['_bucket'] = (string)$bucketedNow;
 
         // Normalize: sort keys, build deterministic string
         ksort($keyParams);
@@ -77,7 +73,7 @@ final class CacheManager
         }
 
         $age = time() - (int)filemtime($cachePath);
-        $maxAge = $this->isEvergreen ? $this->bucketInterval : 3600;
+        $maxAge = $this->bucketInterval;
 
         if ($age >= $maxAge) {
             return false; // stale
@@ -111,22 +107,16 @@ final class CacheManager
      */
     public function setCacheHeaders(): void
     {
-        if ($this->isEvergreen) {
-            $ttl = $this->bucketInterval;
-            header("Cache-Control: public, max-age={$ttl}, s-maxage={$ttl}, stale-while-revalidate={$ttl}");
+        $remaining = max(0, $this->targetTimestamp - time());
+
+        if ($remaining <= 0) {
+            // Timer expired - always shows 00:00:00, cache long
+            header('Cache-Control: public, max-age=86400, s-maxage=86400, immutable');
         } else {
-            $remaining = max(0, $this->targetTimestamp - time());
-            if ($remaining <= 0) {
-                // Expired timer - cache for 24h (always shows 00:00:00)
-                header('Cache-Control: public, max-age=86400, s-maxage=86400, immutable');
-            } elseif ($remaining <= $this->frames) {
-                // About to expire within GIF duration
-                header("Cache-Control: public, max-age={$remaining}, s-maxage={$remaining}");
-            } else {
-                // Far future - cache up to 1h
-                $ttl = min(3600, $remaining);
-                header("Cache-Control: public, max-age={$ttl}, s-maxage={$ttl}, stale-while-revalidate=60");
-            }
+            // TTL = bucket interval (= frame count). After one loop the GIF
+            // is stale and must be regenerated with fresh countdown values.
+            $ttl = min($this->bucketInterval, $remaining);
+            header("Cache-Control: public, max-age={$ttl}, s-maxage={$ttl}");
         }
 
         header('Vary: Accept-Encoding');
