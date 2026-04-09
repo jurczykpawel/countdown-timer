@@ -1,0 +1,17 @@
+# Cache
+/cache/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Old files (replaced by modular structure)
+/countdown.php
+/GIFEncoder.class.php
+/README.md

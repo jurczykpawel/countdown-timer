@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Countdown Timer GIF - Email &amp; Web</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#0f0f1a;color:#e0e0e0;line-height:1.6}
+.container{max-width:900px;margin:0 auto;padding:40px 20px}
+h1{font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px}
+.subtitle{color:#888;font-size:1.1rem;margin-bottom:40px}
+h2{font-size:1.3rem;font-weight:700;color:#ccc;margin:32px 0 16px;border-bottom:1px solid #222;padding-bottom:8px}
+.presets{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;margin-bottom:40px}
+.preset-card{background:#1a1a2e;border:1px solid #2a2a3e;border-radius:12px;padding:20px;transition:border-color .2s}
+.preset-card:hover{border-color:#667eea}
+.preset-card h3{font-size:1rem;color:#aaa;margin-bottom:12px;font-weight:600}
+.preset-card img{width:100%;border-radius:6px;margin-bottom:12px}
+.preset-card code{display:block;background:#111;padding:8px 12px;border-radius:6px;font-size:.75rem;color:#8be;word-break:break-all;margin-top:8px}
+.params{margin:20px 0}
+.params table{width:100%;border-collapse:collapse;font-size:.9rem}
+.params th{text-align:left;padding:8px 12px;background:#1a1a2e;color:#aaa;font-weight:600;border-bottom:1px solid #222}
+.params td{padding:8px 12px;border-bottom:1px solid #1a1a2e}
+.params td:first-child{color:#8be;font-family:monospace;white-space:nowrap}
+.params td:nth-child(3){color:#666;font-family:monospace;font-size:.8rem}
+.example{background:#1a1a2e;border-radius:8px;padding:16px 20px;margin:12px 0}
+.example code{color:#8be;font-size:.85rem;word-break:break-all}
+.badge{display:inline-block;background:#667eea22;color:#667eea;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600;margin-left:6px}
+footer{margin-top:60px;text-align:center;color:#444;font-size:.85rem;padding:20px 0;border-top:1px solid #1a1a2e}
+a{color:#667eea;text-decoration:none}
+a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Countdown Timer GIF</h1>
+<p class="subtitle">Generate animated countdown GIFs for emails, landing pages, and anywhere images work.</p>
+
+<h2>Presets</h2>
+<div class="presets">
+  <div class="preset-card">
+    <h3>dark-boxes</h3>
+    <img src="?preset=dark-boxes&evergreen=1d+2h+30m&seconds=5&width=480&height=120" alt="dark-boxes preset" loading="lazy">
+    <code>?preset=dark-boxes&amp;time=2026-12-25T00:00:00</code>
+  </div>
+  <div class="preset-card">
+    <h3>gradient-cards</h3>
+    <img src="?preset=gradient-cards&evergreen=1d+2h+30m&seconds=5&width=480&height=120" alt="gradient-cards preset" loading="lazy">
+    <code>?preset=gradient-cards&amp;evergreen=2h</code>
+  </div>
+  <div class="preset-card">
+    <h3>minimal-light</h3>
+    <img src="?preset=minimal-light&evergreen=1d+2h+30m&seconds=5&width=480&height=120" alt="minimal-light preset" loading="lazy">
+    <code>?preset=minimal-light&amp;time=2026-12-25T00:00:00</code>
+  </div>
+  <div class="preset-card">
+    <h3>bold-color</h3>
+    <img src="?preset=bold-color&evergreen=1d+2h+30m&seconds=5&width=480&height=100" alt="bold-color preset" loading="lazy">
+    <code>?preset=bold-color&amp;evergreen=30m</code>
+  </div>
+  <div class="preset-card">
+    <h3>transparent</h3>
+    <img src="?preset=transparent&evergreen=1d+2h+30m&seconds=5&width=480&height=100" alt="transparent preset" loading="lazy" style="background:#333;border-radius:6px">
+    <code>?preset=transparent&amp;time=2026-12-25T00:00:00</code>
+  </div>
+</div>
+
+<h2>Usage</h2>
+<p>Embed in any HTML (emails, landing pages, websites):</p>
+<div class="example">
+<code>&lt;img src="https://timer.sellf.app/?preset=dark-boxes&amp;time=2026-12-25T00:00:00" alt="Countdown"&gt;</code>
+</div>
+<p style="margin-top:12px">For emails, use absolute time. For landing pages, evergreen timers work great:</p>
+<div class="example">
+<code>&lt;img src="https://timer.sellf.app/?preset=gradient-cards&amp;evergreen=2h" alt="Countdown"&gt;</code>
+</div>
+
+<h2>Parameters</h2>
+<div class="params">
+<table>
+<tr><th>Parameter</th><th>Description</th><th>Default</th></tr>
+<tr><td>preset</td><td>Named preset (dark-boxes, gradient-cards, minimal-light, bold-color, transparent)</td><td>-</td></tr>
+<tr><td>time</td><td>Absolute target datetime (e.g. 2026-12-25T00:00:00)</td><td>now</td></tr>
+<tr><td>evergreen</td><td>Relative duration (e.g. 2h, 1d+2h+30m, 30m)</td><td>-</td></tr>
+<tr><td>tz</td><td>Timezone (e.g. Europe/Warsaw)</td><td>UTC</td></tr>
+<tr><td>width</td><td>Image width in pixels</td><td>640</td></tr>
+<tr><td>height</td><td>Image height in pixels</td><td>140</td></tr>
+<tr><td>seconds</td><td>Animation duration in seconds (max 120)</td><td>30</td></tr>
+<tr><td>boxColor</td><td>Background color (hex)</td><td>000</td></tr>
+<tr><td>fontColor</td><td>Digit color (hex)</td><td>fff</td></tr>
+<tr><td>font</td><td>Font name (BebasNeue, Inter-Bold, Montserrat-Bold)</td><td>BebasNeue</td></tr>
+<tr><td>fontSize</td><td>Digit font size in px (omit for auto)</td><td>auto</td></tr>
+<tr><td>boxStyle</td><td>Box style: rounded, gradient, outline, none</td><td>none</td></tr>
+<tr><td>boxBg</td><td>Box background color (hex)</td><td>2d2d4a</td></tr>
+<tr><td>boxRadius</td><td>Box corner radius in px</td><td>10</td></tr>
+<tr><td>boxPadding</td><td>Padding inside boxes in px</td><td>12</td></tr>
+<tr><td>separator</td><td>Separator between groups (: or - or empty)</td><td>:</td></tr>
+<tr><td>sepColor</td><td>Separator color (hex)</td><td>fontColor</td></tr>
+<tr><td>labelColor</td><td>Label color (hex)</td><td>fontColor</td></tr>
+<tr><td>bgImage</td><td>Background image (URL or local path)</td><td>-</td></tr>
+<tr><td>bgFit</td><td>Background fit mode (cover, contain, stretch)</td><td>cover</td></tr>
+<tr><td>transparent</td><td>Transparent background (1/true)</td><td>false</td></tr>
+</table>
+</div>
+
+<h2>Caching</h2>
+<p>All generated GIFs are cached at multiple layers for maximum performance:</p>
+<ul style="padding-left:20px;margin-top:8px;color:#999">
+<li><strong>PHP filesystem cache</strong> - identical params = instant serve from disk</li>
+<li><strong>Cloudflare CDN</strong> - edge-cached globally, no origin hits for popular timers</li>
+<li><strong>Evergreen bucketing</strong> - evergreen timers are bucketed (10-30s intervals) for cache efficiency</li>
+</ul>
+
+<h2>Rate Limits</h2>
+<p style="color:#999">30 requests per minute per IP. For high-volume email campaigns, pre-warm the cache with the exact URL before sending.</p>
+
+<footer>
+  <p>Powered by <a href="https://sellf.app">Sellf</a></p>
+</footer>
+
+</div>
+</body>
+</html>
