@@ -536,34 +536,34 @@ footer {
       </div>
     </div>
 
-    <div class="code-block"><span class="comment"># 1. Clone and generate API key</span>
+    <div class="oneliner-box" style="margin-bottom: 24px;">
+      <div class="icon">&#9889;</div>
+      <div>
+        <h3>Recommended: deploy with StackPilot</h3>
+        <p><a href="https://github.com/jurczykpawel/stackpilot" style="color:var(--green)">StackPilot</a> handles everything automatically: PHP-FPM, API key generation, cache directories, cleanup cron, Caddy config, Cloudflare DNS and CDN cache rules.</p>
+        <code>./local/deploy.sh countdown-timer --ssh=vps --domain=timer.example.com</code>
+      </div>
+    </div>
+
+    <p style="color:var(--text-muted); margin-bottom: 16px;">Or set up manually:</p>
+
+    <div class="code-block"><span class="comment"># 1. Clone the repository</span>
 <span class="cmd">git clone</span> https://github.com/jurczykpawel/countdown-timer.git
 <span class="cmd">cd</span> countdown-timer
-KEY="tk_master_$(openssl rand -hex 16)" &amp;&amp; \
-  echo "{\"$KEY\":{\"name\":\"Master\",\"limit\":0,\"active\":true}}" \
-  | python3 -m json.tool > keys.json &amp;&amp; echo "Your key: $KEY"
 
-<span class="comment"># 2. Create cache directories</span>
+<span class="comment"># 2. Generate an API key (creates keys.json with a random master key)</span>
+<span class="cmd">bash</span> setup-key.sh
+
+<span class="comment"># 3. Create cache directories (used for GIF caching and rate limiting)</span>
 <span class="cmd">sudo mkdir -p</span> /var/cache/timer-gif/{ab,ev,uid,apikeys,ratelimit}
 <span class="cmd">sudo chown -R</span> www-data:www-data /var/cache/timer-gif
 
-<span class="comment"># 3. Caddy config example</span>
+<span class="comment"># 4. Point your web server (Caddy example)</span>
 <span class="comment"># timer.example.com {</span>
-<span class="comment">#     root * /var/www/timer</span>
+<span class="comment">#     root * /path/to/countdown-timer</span>
 <span class="comment">#     php_fastcgi unix//run/php/php-fpm.sock</span>
 <span class="comment">#     file_server</span>
 <span class="comment"># }</span></div>
-
-    <div style="margin-top: 24px;">
-      <div class="oneliner-box">
-        <div class="icon">&#9889;</div>
-        <div>
-          <h3>One-liner with StackPilot</h3>
-          <p>If you use <a href="https://github.com/jurczykpawel/stackpilot" style="color:var(--green)">StackPilot</a> for VPS management, deploy with a single command:</p>
-          <code>./local/deploy.sh countdown-timer --ssh=vps --domain=timer.example.com</code>
-        </div>
-      </div>
-    </div>
   </div>
 </section>
 

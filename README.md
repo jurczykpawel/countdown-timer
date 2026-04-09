@@ -28,18 +28,24 @@ Self-hosted animated countdown timer GIF generator for emails, landing pages, an
 - PHP 8.1+ with GD extension (`php-gd`)
 - Web server with PHP-FPM (Caddy, nginx, Apache)
 
-### Install
+### Recommended: StackPilot (one command)
+
+[StackPilot](https://github.com/jurczykpawel/stackpilot) handles everything: PHP-FPM, API key, cache dirs, cleanup cron, Caddy, Cloudflare DNS + CDN cache rules.
+
+```bash
+./local/deploy.sh countdown-timer --ssh=vps --domain=timer.example.com
+```
+
+### Manual install
 
 ```bash
 git clone https://github.com/jurczykpawel/countdown-timer.git
 cd countdown-timer
 
-# Generate API key
-KEY="tk_master_$(openssl rand -hex 16)" && \
-  echo "{\"$KEY\":{\"name\":\"Master\",\"limit\":0,\"active\":true}}" \
-  | python3 -m json.tool > keys.json && echo "Your key: $KEY"
+# Generate a random API key (saved to keys.json)
+bash setup-key.sh
 
-# Create cache directory
+# Create cache directories
 sudo mkdir -p /var/cache/timer-gif/{ab,ev,uid,apikeys,ratelimit}
 sudo chown -R www-data:www-data /var/cache/timer-gif
 
