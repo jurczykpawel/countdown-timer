@@ -499,6 +499,21 @@ footer {
         <h3>Background Images</h3>
         <p>Local or remote images with cover, contain, or stretch fit. Transparent GIF support via chroma key.</p>
       </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#127754;</div>
+        <h3>Built for Bursts</h3>
+        <p>Send a campaign to 10,000 subscribers and they all open at once? The timer generates once and serves the rest from cache. No queue, no failures, no SaaS surcharge for your viral moment.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#9878;</div>
+        <h3>Quotas That Make Sense</h3>
+        <p>Daily limits count generations, not deliveries. One popular evergreen timer can be viewed a million times against a small daily budget. Only fresh generations tick the counter.</p>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">&#128737;</div>
+        <h3>Safe Defaults</h3>
+        <p>Per-key caps on image size and animation length. Remote backgrounds blocked unless you opt in for a specific key. Origin protected against header spoofing when behind a CDN.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -580,11 +595,26 @@ footer {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
         API Key Authentication
       </h3>
-      <p>All GIF generation requires a valid API key. Add <code class="inline-code">&amp;key=YOUR_KEY</code> to every request. Keys are stored in <code class="inline-code">keys.json</code> with per-key daily quotas.</p>
+      <p>All GIF generation requires a valid API key. Add <code class="inline-code">&amp;key=YOUR_KEY</code> to every request. Keys are stored in <code class="inline-code">keys.json</code>, and you can give different keys different power levels.</p>
       <div class="code-block"><span class="comment">&lt;!-- Embed in email or web page --&gt;</span>
 &lt;img src="https://timer.example.com/<span class="cmd">?preset=dark-boxes</span>
   <span class="cmd">&amp;time=2026-12-25T00:00:00</span>
   <span class="cmd">&amp;key=YOUR_KEY</span>" alt="Countdown"&gt;</div>
+      <p style="margin-top: 18px; margin-bottom: 10px; color: var(--text-secondary); font-size: .85rem;">Tier your keys for different audiences. Tight clamps for public newsletters, full power for internal tools:</p>
+      <div class="code-block"><span class="comment">// keys.json</span>
+{
+  "tk_master_xyz": { "limit": 0 },                  <span class="comment">// unlimited internal key</span>
+  "tk_newsletter": {
+    "limit": 5000,                                  <span class="comment">// 5k generations / day</span>
+    "max_width": 640,                               <span class="comment">// clamp huge requests</span>
+    "max_seconds": 30                               <span class="comment">// shorter animations</span>
+  },
+  "tk_landing_page": {
+    "limit": 50000,
+    "allow_remote_bg": true,                        <span class="comment">// opt in to remote bgs</span>
+    "bg_domains": ["cdn.mybrand.com"]               <span class="comment">// only your CDN</span>
+  }
+}</div>
     </div>
 
     <div class="doc-card">
@@ -609,7 +639,7 @@ footer {
   <div class="container">
     <div class="section-label">API Reference</div>
     <h2>URL parameters</h2>
-    <p class="section-desc">All parameters are passed as URL query strings. Presets set defaults that individual parameters can override.</p>
+    <p class="section-desc">All parameters are passed as URL query strings. Presets set defaults that individual parameters can override. Per-key limits in <code class="inline-code">keys.json</code> clamp these values before generation, so a public key can't request a 1200&times;400 timer with a remote background.</p>
 
     <div style="overflow-x:auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
     <table class="api-table">
