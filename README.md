@@ -19,8 +19,8 @@ Self-hosted animated countdown timer GIF generator for emails, landing pages, an
 - **Polish labels** - DNI, GODZIN, MINUT, SEKUND (auto-switches 4-part/3-part)
 - **Tiered API keys** - daily quotas, per-key clamps on image size and animation length, opt-in remote backgrounds with domain allowlist
 - **Multi-layer caching** - PHP filesystem cache + Cache-Control headers for CDN
-- **Built for bursts** - singleflight on cache misses, so a campaign blast where 10k subscribers open at once still produces one generation, not ten thousand
-- **Quotas count generations, not deliveries** - a popular evergreen timer viewed a million times still counts as one against your daily budget
+- **Built for bursts** - singleflight collapses concurrent misses to one generation per cache key. A campaign-wide deadline (everyone counting to the same date) generates once for the whole blast; per-subscriber deadlines (with `uid`) generate once per recipient, then every re-open is free
+- **Quotas count generations, not deliveries** - re-opens of the same timer are cache hits and never charge the daily limit
 - **Origin-aware rate limiting** - per-IP throttle that trusts `CF-Connecting-IP` only when the request actually came from a Cloudflare range
 - **Landing page** - built-in HTML page with preset demos and parameter docs
 
@@ -166,7 +166,13 @@ All GIF generation requires an API key (`?key=YOUR_KEY`). Keys are stored in `ke
 | `allow_remote_bg` | `false` by default. Must be explicitly `true` for the key to fetch remote `bgImage` URLs. Local images in `images/` are always allowed. |
 | `bg_domains` | Optional. When set, restricts remote `bgImage` host to listed domains (exact or subdomain match). Without it but with `allow_remote_bg: true`, any public host is allowed (SSRF-protected). |
 
-Quota counts what you generate, not what you serve. A campaign hit by 10,000 subscribers all opening at once still costs ~1 generation per unique parameter combination, with the rest served from cache.
+Quota counts what you generate, not what you serve. The cost depends on the campaign shape:
+
+- **Same deadline for everyone** (e.g. `?time=2026-12-25T00:00:00`): all subscribers share the same URL, the timer generates **once** for the whole blast no matter how many open simultaneously.
+- **Bucketed evergreen, no `uid`** (e.g. `?evergreen=2h`): the cache key includes a short time bucket (~30 s), so 10,000 subscribers opening within the same window collapse to a handful of generations, not ten thousand.
+- **Per-subscriber deadline with `uid`** (e.g. `?evergreen=48h&uid=subscriber-123`): each `uid` gets its own URL and its own generation. 10,000 unique recipients = 10,000 generations on first open. Every subsequent re-open by the same subscriber is a cache hit and free.
+
+Singleflight ensures concurrent requests for the same cache key never duplicate work, regardless of which shape above you use.
 
 ## Cache Cleanup
 
