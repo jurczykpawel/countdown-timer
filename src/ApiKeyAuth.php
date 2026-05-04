@@ -55,6 +55,9 @@ final class ApiKeyAuth
 
     /**
      * Check if key has remaining daily quota. Returns true if OK.
+     *
+     * Atomic read-modify-write under flock: concurrent requests with the
+     * same key cannot both pass when count is at limit-1.
      */
     public function checkQuota(string $key, array $config): bool
     {
@@ -67,20 +70,29 @@ final class ApiKeyAuth
         $hash = substr(hash('sha256', $key), 0, 16);
         $counterFile = $this->counterDir . '/' . $hash . '_' . $today . '.count';
 
-        $current = 0;
-        if (file_exists($counterFile)) {
-            $current = (int)trim((string)@file_get_contents($counterFile));
+        $fh = @fopen($counterFile, 'c+');
+        if ($fh === false) {
+            return false; // fail closed
         }
-
-        if ($current >= $limit) {
-            return false;
+        try {
+            if (!flock($fh, LOCK_EX)) {
+                return false;
+            }
+            $data = stream_get_contents($fh);
+            $current = ($data !== false && $data !== '') ? (int)trim($data) : 0;
+            if ($current >= $limit) {
+                return false;
+            }
+            $next = (string)($current + 1);
+            if (ftruncate($fh, 0) === false) return false;
+            if (rewind($fh) === false) return false;
+            if (fwrite($fh, $next) === false) return false;
+            fflush($fh);
+            return true;
+        } finally {
+            flock($fh, LOCK_UN);
+            fclose($fh);
         }
-
-        // Fail closed: if counter can't be written, deny request
-        if (@file_put_contents($counterFile, (string)($current + 1)) === false) {
-            return false;
-        }
-        return true;
     }
 
     /**

@@ -146,22 +146,28 @@ if ($cache->tryServe($cachePath)) {
 }
 
 // =========================================================================
-// Generate GIF
+// Singleflight: only one worker generates per cache key per bucket.
+// Peers block on the lock then re-check cache (likely served by winner).
 // =========================================================================
+$lockHandle = $cache->acquireLock($cachePath);
+if ($lockHandle !== null && $cache->tryServe($cachePath)) {
+    $cache->releaseLock($lockHandle);
+    exit;
+}
+
 try {
     $timer = new CountdownTimer();
     $gifData = $timer->generate($params);
 } catch (\Throwable $e) {
+    $cache->releaseLock($lockHandle);
     http_response_code(500);
     header('Content-Type: application/json');
     echo json_encode(['error' => 'GIF generation failed', 'detail' => $e->getMessage()]);
     exit;
 }
 
-// =========================================================================
-// Cache write + serve
-// =========================================================================
 $cache->write($cachePath, $gifData);
+$cache->releaseLock($lockHandle);
 
 header('Content-Type: image/gif');
 header('Content-Length: ' . strlen($gifData));

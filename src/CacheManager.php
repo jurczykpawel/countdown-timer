@@ -86,6 +86,7 @@ final class CacheManager
 
     /**
      * Try to serve from cache. Returns true if served, false if miss.
+     * Honors If-None-Match → 304 Not Modified (no body).
      */
     public function tryServe(string $cachePath): bool
     {
@@ -106,12 +107,36 @@ final class CacheManager
             }
         }
 
+        // Conditional 304: client/CDN already has the current ETag
+        $clientEtag = $_SERVER['HTTP_IF_NONE_MATCH'] ?? '';
+        if ($clientEtag !== '' && $this->etagMatches($clientEtag)) {
+            http_response_code(304);
+            header('X-Cache: HIT-304');
+            $this->setCacheHeaders();
+            return true;
+        }
+
         header('Content-Type: image/gif');
         header('X-Cache: HIT');
         header('Content-Length: ' . filesize($cachePath));
         $this->setCacheHeaders();
         readfile($cachePath);
         return true;
+    }
+
+    /**
+     * Match If-None-Match value against current cache ETag.
+     * Handles weak (W/"...") prefix and comma-separated lists.
+     */
+    private function etagMatches(string $headerValue): bool
+    {
+        $current = '"' . $this->cacheKey . '"';
+        foreach (explode(',', $headerValue) as $tag) {
+            $t = trim($tag);
+            if ($t === '*' || $t === $current) return true;
+            if (str_starts_with($t, 'W/') && substr($t, 2) === $current) return true;
+        }
+        return false;
     }
 
     /**
@@ -127,6 +152,47 @@ final class CacheManager
         $tmp = $cachePath . '.tmp.' . getmypid();
         file_put_contents($tmp, $gifData);
         rename($tmp, $cachePath); // atomic on same filesystem
+    }
+
+    /**
+     * Singleflight lock for GIF generation.
+     *
+     * Acquires an exclusive lock on a sibling .lock file. While one worker
+     * generates the GIF, peers block here. Returns the lock file handle —
+     * caller MUST release it after writing cache (or on failure).
+     *
+     * Bucket flip without this = N parallel CountdownTimer::generate() calls
+     * for the same params (CPU + GD + atomic-rename race).
+     */
+    public function acquireLock(string $cachePath): mixed
+    {
+        $dir = dirname($cachePath);
+        if (!is_dir($dir)) {
+            @mkdir($dir, 0755, true);
+        }
+        $lockPath = $cachePath . '.lock';
+        $fh = @fopen($lockPath, 'c');
+        if ($fh === false) {
+            return null; // proceed without lock (degraded but functional)
+        }
+        // 5s timeout via LOCK_NB + retry; bucket interval is >=1s so this caps tail latency
+        $start = microtime(true);
+        while (!flock($fh, LOCK_EX | LOCK_NB)) {
+            if (microtime(true) - $start > 5.0) {
+                fclose($fh);
+                return null;
+            }
+            usleep(20_000); // 20ms
+        }
+        return $fh;
+    }
+
+    public function releaseLock(mixed $fh): void
+    {
+        if (is_resource($fh)) {
+            flock($fh, LOCK_UN);
+            fclose($fh);
+        }
     }
 
     /**
@@ -148,7 +214,8 @@ final class CacheManager
             header("Cache-Control: public, max-age={$ttl}, s-maxage={$ttl}");
         }
 
-        header('Vary: Accept-Encoding');
+        // No Vary header — GIFs aren't gzipped by Caddy/CF, so Vary just
+        // fragments CDN cache (one entry per Accept-Encoding string variant).
         header("ETag: \"{$this->cacheKey}\"");
     }
 
@@ -181,17 +248,47 @@ final class CacheManager
 
     /**
      * Disk usage guard. Call periodically (not every request).
+     *
+     * Uses a shared stamp file + non-blocking flock so only ONE worker
+     * across the entire php-fpm pool runs the `du` scan per interval.
+     * Without this, a per-worker `static $lastCheck` lets each worker
+     * independently re-run the scan (32 workers = 32 scans / 5min).
      */
     public static function cleanupIfNeeded(string $baseDir = '/var/cache/timer-gif', int $maxMb = 500): void
     {
-        static $lastCheck = 0;
-        if (time() - $lastCheck < 300) return;
-        $lastCheck = time();
+        $stamp = $baseDir . '/.cleanup.stamp';
+        if (file_exists($stamp) && (time() - filemtime($stamp)) < 300) {
+            return;
+        }
+        $fh = @fopen($stamp, 'c');
+        if ($fh === false) {
+            return;
+        }
+        try {
+            // Non-blocking: if another worker already holds the lock, skip.
+            if (!flock($fh, LOCK_EX | LOCK_NB)) {
+                return;
+            }
+            // Re-check under lock (another worker may have just finished)
+            clearstatcache(true, $stamp);
+            if ((time() - filemtime($stamp)) < 300 && filesize($stamp) > 0) {
+                return;
+            }
+            // Touch stamp BEFORE running du, so concurrent peers back off
+            ftruncate($fh, 0);
+            rewind($fh);
+            fwrite($fh, (string)time());
+            fflush($fh);
+            touch($stamp);
 
-        $safeDir = escapeshellarg($baseDir);
-        $sizeMb = (int)trim((string)@shell_exec("du -sm {$safeDir} 2>/dev/null | cut -f1"));
-        if ($sizeMb > $maxMb) {
-            @shell_exec("find {$safeDir} -name '*.gif' -mmin +60 -delete 2>/dev/null &");
+            $safeDir = escapeshellarg($baseDir);
+            $sizeMb = (int)trim((string)@shell_exec("du -sm {$safeDir} 2>/dev/null | cut -f1"));
+            if ($sizeMb > $maxMb) {
+                @shell_exec("find {$safeDir} -name '*.gif' -mmin +60 -delete 2>/dev/null &");
+            }
+        } finally {
+            flock($fh, LOCK_UN);
+            fclose($fh);
         }
     }
 }
