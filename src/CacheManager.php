@@ -99,8 +99,13 @@ final class CacheManager
     /**
      * Try to serve from cache. Returns true if served, false if miss.
      * Honors If-None-Match → 304 Not Modified (no body).
+     *
+     * Extra headers (e.g. X-Lock: HIT-AFTER-LOCK) must be passed in here
+     * because readfile() flushes output, after which header() calls fail.
+     *
+     * @param array<string,string> $extraHeaders Header name => value, sent before body.
      */
-    public function tryServe(string $cachePath): bool
+    public function tryServe(string $cachePath, array $extraHeaders = []): bool
     {
         if (!file_exists($cachePath)) {
             return false;
@@ -124,6 +129,9 @@ final class CacheManager
         if ($clientEtag !== '' && $this->etagMatches($clientEtag)) {
             http_response_code(304);
             header('X-Cache: HIT-304');
+            foreach ($extraHeaders as $name => $value) {
+                header($name . ': ' . $value);
+            }
             $this->setCacheHeaders();
             return true;
         }
@@ -131,6 +139,9 @@ final class CacheManager
         header('Content-Type: image/gif');
         header('X-Cache: HIT');
         header('Content-Length: ' . filesize($cachePath));
+        foreach ($extraHeaders as $name => $value) {
+            header($name . ': ' . $value);
+        }
         $this->setCacheHeaders();
         readfile($cachePath);
         return true;

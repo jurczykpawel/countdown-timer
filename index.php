@@ -206,8 +206,8 @@ if ($lockHandle === null) {
     exit;
 }
 
-if ($cache->tryServe($cachePath)) {
-    header('X-Lock: HIT-AFTER-LOCK');
+// Pass header in — can't header() after tryServe (readfile already flushed)
+if ($cache->tryServe($cachePath, ['X-Lock' => 'HIT-AFTER-LOCK'])) {
     $cache->releaseLock($lockHandle);
     exit;
 }
