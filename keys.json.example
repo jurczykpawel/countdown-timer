@@ -1,8 +1,11 @@
 {
+    "_comment": "Remote bgImage URLs are DENIED by default. A key must opt in via allow_remote_bg=true; setting bg_domains restricts to listed hosts (exact or subdomain match).",
+
     "tk_master_CHANGE_ME": {
         "name": "Master (Pawel)",
         "limit": 0,
-        "active": true
+        "active": true,
+        "allow_remote_bg": true
     },
     "tk_free_EXAMPLE": {
         "name": "Free tier example",
@@ -10,8 +13,7 @@
         "active": true,
         "max_width": 640,
         "max_height": 200,
-        "max_seconds": 30,
-        "allow_remote_bg": false
+        "max_seconds": 30
     },
     "tk_pro_EXAMPLE": {
         "name": "Pro tier with allowlisted bg domains",

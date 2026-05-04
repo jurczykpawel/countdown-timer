@@ -118,14 +118,15 @@ $params['boxColor']  = $params['boxColor']  ?? '000';
 $params['fontColor'] = $params['fontColor'] ?? 'fff';
 $params['font']      = $params['font']      ?? 'BebasNeue';
 
-// bgImage policy: per-key whitelist of remote domains.
-// `allow_remote_bg` defaults to true for keys without explicit policy
-// (backward compat) and is forced false for the preview pseudo-key.
+// bgImage policy: default-deny for remote URLs.
+// A key must explicitly opt in with allow_remote_bg=true. If bg_domains is
+// also set, the URL host must match an entry (exact or subdomain). The
+// preview pseudo-key always blocks remote bgImage.
 if (!empty($params['bgImage']) && is_string($params['bgImage'])
         && preg_match('~^https?://~i', $params['bgImage'])) {
-    $allowRemote = (bool)($keyConfig['allow_remote_bg'] ?? true);
+    $allowRemote = (bool)($keyConfig['allow_remote_bg'] ?? false);
     if (!$allowRemote || $apiKey === '__preview__') {
-        $params['bgImage'] = null;
+        $params['bgImage'] = null; // silently drop for legacy keys
     } else {
         $whitelist = $keyConfig['bg_domains'] ?? null;
         if (is_array($whitelist) && !empty($whitelist)) {
@@ -148,7 +149,7 @@ if (!empty($params['bgImage']) && is_string($params['bgImage'])
                 exit;
             }
         }
-        // No whitelist set but allow_remote_bg=true: legacy SSRF-protected fetch
+        // No whitelist set but allow_remote_bg=true: SSRF-protected fetch in CountdownTimer
     }
 }
 
@@ -183,17 +184,21 @@ if ($cache->tryServe($cachePath)) {
 }
 
 // =========================================================================
-// MISS path: now charge quota + generate
+// MISS path: singleflight FIRST, quota only for the worker that generates.
+//
+// If quota came before the lock, 100 concurrent MISS workers would each
+// burn quota even though only 1 actually generates. Lock + re-check first;
+// peers exit through the cache; the winner pays the quota cost.
 // =========================================================================
-if (!$auth->checkQuota($apiKey, $keyConfig)) {
-    ApiKeyAuth::denyQuotaExceeded((int)($keyConfig['limit'] ?? 0));
-}
-
-// Singleflight: only one worker generates per cache key per bucket.
 $lockHandle = $cache->acquireLock($cachePath);
 if ($lockHandle !== null && $cache->tryServe($cachePath)) {
     $cache->releaseLock($lockHandle);
     exit;
+}
+
+if (!$auth->checkQuota($apiKey, $keyConfig)) {
+    $cache->releaseLock($lockHandle);
+    ApiKeyAuth::denyQuotaExceeded((int)($keyConfig['limit'] ?? 0));
 }
 
 try {
