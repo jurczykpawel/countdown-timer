@@ -50,7 +50,14 @@ final class CacheManager
             $evergreenSeconds = self::parseDurationToSeconds($params['evergreen']);
             $this->targetTimestamp = $this->bucketedNow + $evergreenSeconds;
         } else {
-            $this->targetTimestamp = (int)strtotime($params['time'] ?? 'now');
+            // Parse $time with the SAME timezone semantics as CountdownTimer:
+            // default UTC (not server tz!), override with $params['tz'] if valid.
+            // Without this, time=2026-12-25T00:00:00&tz=Europe/Warsaw on a UTC
+            // server lands cache 1h off and may flip isExpired wrongly.
+            $this->targetTimestamp = self::parseTimeWithTz(
+                (string)($params['time'] ?? 'now'),
+                $params['tz'] ?? null
+            );
         }
 
         // Check if timer is already expired
@@ -217,6 +224,33 @@ final class CacheManager
         // No Vary header — GIFs aren't gzipped by Caddy/CF, so Vary just
         // fragments CDN cache (one entry per Accept-Encoding string variant).
         header("ETag: \"{$this->cacheKey}\"");
+    }
+
+    /**
+     * Parse a time string with explicit timezone, matching CountdownTimer.
+     *
+     * Defaults to UTC (NOT server tz). If the time string includes its own
+     * tz/offset (e.g. trailing Z or +02:00), DateTime honors it and $tz only
+     * affects formatting — same behavior as the generator.
+     */
+    public static function parseTimeWithTz(string $timeStr, ?string $tzName): int
+    {
+        $tz = 'UTC';
+        if ($tzName !== null && is_string($tzName) && $tzName !== '') {
+            try {
+                new \DateTimeZone($tzName);
+                $tz = $tzName;
+            } catch (\Throwable $e) {
+                // invalid tz -> stay on UTC, mirrors CountdownTimer behavior
+            }
+        }
+        $timezone = new \DateTimeZone($tz);
+        try {
+            $dt = new \DateTime($timeStr, $timezone);
+            return (int)$dt->getTimestamp();
+        } catch (\Throwable $e) {
+            return (int)strtotime($timeStr); // last-resort fallback
+        }
     }
 
     /**

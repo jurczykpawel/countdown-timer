@@ -10,7 +10,11 @@ declare(strict_types=1);
  *   GET /?preset=...   -> Generated countdown GIF with preset
  *   GET /?evergreen=.. -> Evergreen countdown GIF
  *
- * Layers: API Key -> Rate Limiter -> UID resolve -> Cache Check -> GIF Generation -> Cache Write -> Serve
+ * Pipeline ordering (HIT vs MISS):
+ *   parse params → key validate (cheap) → per-key clamp + bg whitelist
+ *   → IP rate limit → UID resolve → cache check
+ *     HIT  → serve (NO quota burn — quota measures generation cost)
+ *     MISS → quota counter → singleflight → generate → cache write → serve
  */
 
 require_once __DIR__ . '/src/Presets.php';
@@ -25,7 +29,6 @@ require_once __DIR__ . '/src/ApiKeyAuth.php';
 // =========================================================================
 $hasTimerParam = isset($_GET['time']) || isset($_GET['evergreen']) || isset($_GET['relative']) || isset($_GET['preset']);
 if (!$hasTimerParam) {
-    // Serve the landing page
     $landingFile = __DIR__ . '/landing.html';
     if (file_exists($landingFile)) {
         header('Content-Type: text/html; charset=utf-8');
@@ -39,16 +42,14 @@ if (!$hasTimerParam) {
 }
 
 // =========================================================================
-// API key authentication
+// API key resolution (validation only — no quota counter yet)
 // =========================================================================
-// Internal preview key for landing page demos (limited: max 5 frames, 480px width)
 $isPreview = isset($_GET['_preview']) && $_GET['_preview'] === '1';
 if ($isPreview) {
-    // Force safe limits for preview — no external resources
     $_GET['seconds'] = min((int)($_GET['seconds'] ?? 5), 5);
-    $_GET['width'] = min((int)($_GET['width'] ?? 480), 480);
-    $_GET['height'] = min((int)($_GET['height'] ?? 140), 200);
-    unset($_GET['bgImage']); // block SSRF via preview
+    $_GET['width']   = min((int)($_GET['width'] ?? 480), 480);
+    $_GET['height']  = min((int)($_GET['height'] ?? 140), 200);
+    unset($_GET['bgImage']);
     $apiKey = '__preview__';
 } else {
     $apiKey = $_GET['key'] ?? null;
@@ -64,20 +65,8 @@ if ($keyConfig === null) {
     ApiKeyAuth::denyInvalidKey();
 }
 
-if (!$auth->checkQuota($apiKey, $keyConfig)) {
-    ApiKeyAuth::denyQuotaExceeded((int)($keyConfig['limit'] ?? 0));
-}
-
 // =========================================================================
-// Rate limiting (per IP, on top of per-key quota)
-// =========================================================================
-$rateLimiter = new RateLimiter('/var/cache/timer-gif/ratelimit', 30);
-if (!$rateLimiter->check(RateLimiter::clientIp())) {
-    $rateLimiter->deny();
-}
-
-// =========================================================================
-// Parse and normalize params
+// Parse and normalize params (cheap)
 // =========================================================================
 $rawParams = [
     'time'         => $_GET['time'] ?? null,
@@ -97,7 +86,6 @@ $rawParams = [
     'bgFit'        => $_GET['bgFit'] ?? null,
     'transparent'  => $_GET['transparent'] ?? null,
     'preset'       => $_GET['preset'] ?? null,
-    // Visual style params (from presets or direct)
     'boxStyle'     => $_GET['boxStyle'] ?? null,
     'boxBg'        => $_GET['boxBg'] ?? null,
     'boxBgEnd'     => $_GET['boxBgEnd'] ?? null,
@@ -110,45 +98,98 @@ $rawParams = [
 ];
 // Note: 'key' and 'uid' are NOT in rawParams — they don't affect GIF output
 
-// Apply preset defaults (user params override)
 $params = Presets::apply($rawParams);
 
-// Apply sane defaults for missing values
-$params['width']   = max(100, min(1200, (int)($params['width'] ?? 640)));
-$params['height']  = max(40, min(400, (int)($params['height'] ?? 140)));
-$params['seconds'] = max(1, min(120, (int)($params['seconds'] ?? 30)));
-$params['boxColor'] = $params['boxColor'] ?? '000';
+// =========================================================================
+// Per-key limits — clamp params and validate bgImage
+// (applied BEFORE cache key so a key's tier shapes its own cache space)
+// =========================================================================
+$globalCaps = ['width' => 1200, 'height' => 400, 'seconds' => 120];
+$globalMins = ['width' => 100,  'height' => 40,  'seconds' => 1];
+
+$capW = min($globalCaps['width'],   (int)($keyConfig['max_width']   ?? $globalCaps['width']));
+$capH = min($globalCaps['height'],  (int)($keyConfig['max_height']  ?? $globalCaps['height']));
+$capS = min($globalCaps['seconds'], (int)($keyConfig['max_seconds'] ?? $globalCaps['seconds']));
+
+$params['width']   = max($globalMins['width'],   min($capW, (int)($params['width']   ?? 640)));
+$params['height']  = max($globalMins['height'],  min($capH, (int)($params['height']  ?? 140)));
+$params['seconds'] = max($globalMins['seconds'], min($capS, (int)($params['seconds'] ?? 30)));
+$params['boxColor']  = $params['boxColor']  ?? '000';
 $params['fontColor'] = $params['fontColor'] ?? 'fff';
-$params['font'] = $params['font'] ?? 'BebasNeue';
+$params['font']      = $params['font']      ?? 'BebasNeue';
+
+// bgImage policy: per-key whitelist of remote domains.
+// `allow_remote_bg` defaults to true for keys without explicit policy
+// (backward compat) and is forced false for the preview pseudo-key.
+if (!empty($params['bgImage']) && is_string($params['bgImage'])
+        && preg_match('~^https?://~i', $params['bgImage'])) {
+    $allowRemote = (bool)($keyConfig['allow_remote_bg'] ?? true);
+    if (!$allowRemote || $apiKey === '__preview__') {
+        $params['bgImage'] = null;
+    } else {
+        $whitelist = $keyConfig['bg_domains'] ?? null;
+        if (is_array($whitelist) && !empty($whitelist)) {
+            $host = parse_url($params['bgImage'], PHP_URL_HOST);
+            $hostLower = is_string($host) ? strtolower($host) : '';
+            $matched = false;
+            foreach ($whitelist as $allowed) {
+                if (!is_string($allowed)) continue;
+                $allowedLower = strtolower(trim($allowed));
+                if ($allowedLower === $hostLower
+                        || str_ends_with($hostLower, '.' . $allowedLower)) {
+                    $matched = true;
+                    break;
+                }
+            }
+            if (!$matched) {
+                http_response_code(403);
+                header('Content-Type: application/json');
+                echo json_encode(['error' => 'bgImage host not in allowlist for this key']);
+                exit;
+            }
+        }
+        // No whitelist set but allow_remote_bg=true: legacy SSRF-protected fetch
+    }
+}
 
 // =========================================================================
-// UID-based evergreen: resolve persistent deadline
+// IP rate limit — applies to every request (HIT and MISS)
+// =========================================================================
+$rateLimiter = new RateLimiter('/var/cache/timer-gif/ratelimit', 30);
+if (!$rateLimiter->check(RateLimiter::clientIp())) {
+    $rateLimiter->deny();
+}
+
+// =========================================================================
+// UID-based evergreen: resolve persistent deadline (one-time write per UID)
 // =========================================================================
 $uid = $_GET['uid'] ?? null;
 if ($uid !== null && $uid !== '' && !empty($params['evergreen'])) {
     $uidStore = new UidStore();
     $evergreenSeconds = CacheManager::parseDurationToSeconds((string)$params['evergreen']);
     $deadline = $uidStore->getOrCreate($uid, $evergreenSeconds);
-
-    // Convert evergreen to absolute time (persistent)
     $params['time'] = date('Y-m-d\TH:i:s', $deadline);
     unset($params['evergreen']);
 }
 
 // =========================================================================
-// Cache check
+// Cache check (BEFORE quota — HIT must not burn generation budget)
 // =========================================================================
 $cache = new CacheManager('/var/cache/timer-gif');
 $cachePath = $cache->computeKey($params);
 
 if ($cache->tryServe($cachePath)) {
-    exit; // served from cache
+    exit;
 }
 
 // =========================================================================
-// Singleflight: only one worker generates per cache key per bucket.
-// Peers block on the lock then re-check cache (likely served by winner).
+// MISS path: now charge quota + generate
 // =========================================================================
+if (!$auth->checkQuota($apiKey, $keyConfig)) {
+    ApiKeyAuth::denyQuotaExceeded((int)($keyConfig['limit'] ?? 0));
+}
+
+// Singleflight: only one worker generates per cache key per bucket.
 $lockHandle = $cache->acquireLock($cachePath);
 if ($lockHandle !== null && $cache->tryServe($cachePath)) {
     $cache->releaseLock($lockHandle);

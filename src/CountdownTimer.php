@@ -217,7 +217,7 @@ class CountdownTimer
         $frameCount = min($this->seconds, $remaining + 3);
         $frameCount = max(1, $frameCount);
 
-        for ($i = 0; $i <= $frameCount; $i++) {
+        for ($i = 0; $i < $frameCount; $i++) {
             $layer = imagecreatetruecolor($this->width, $this->height);
             imagecopy($layer, $this->preparedBg, 0, 0, 0, 0, $this->width, $this->height);
 

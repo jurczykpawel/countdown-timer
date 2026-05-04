@@ -7,6 +7,20 @@
     "tk_free_EXAMPLE": {
         "name": "Free tier example",
         "limit": 1000,
-        "active": true
+        "active": true,
+        "max_width": 640,
+        "max_height": 200,
+        "max_seconds": 30,
+        "allow_remote_bg": false
+    },
+    "tk_pro_EXAMPLE": {
+        "name": "Pro tier with allowlisted bg domains",
+        "limit": 100000,
+        "active": true,
+        "max_width": 1200,
+        "max_height": 400,
+        "max_seconds": 120,
+        "allow_remote_bg": true,
+        "bg_domains": ["images.example.com", "cdn.mycompany.com"]
     }
 }
