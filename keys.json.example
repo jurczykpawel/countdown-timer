@@ -1,11 +1,10 @@
 {
-    "_comment": "Remote bgImage URLs are DENIED by default. A key must opt in via allow_remote_bg=true; setting bg_domains restricts to listed hosts (exact or subdomain match).",
+    "_comment": "Remote bgImage URLs are DENIED by default. A key opts in with allow_remote_bg=true and SHOULD also set bg_domains to restrict hosts (exact or subdomain). Granting allow_remote_bg without bg_domains lets the key pin workers fetching arbitrary public hosts (SSRF guards still apply but it's an unnecessary surface).",
 
     "tk_master_CHANGE_ME": {
         "name": "Master (Pawel)",
         "limit": 0,
-        "active": true,
-        "allow_remote_bg": true
+        "active": true
     },
     "tk_free_EXAMPLE": {
         "name": "Free tier example",

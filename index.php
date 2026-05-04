@@ -19,6 +19,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/src/Presets.php';
 require_once __DIR__ . '/src/CacheManager.php';
+require_once __DIR__ . '/src/CloudflareIps.php';
 require_once __DIR__ . '/src/RateLimiter.php';
 require_once __DIR__ . '/src/CountdownTimer.php';
 require_once __DIR__ . '/src/UidStore.php';
@@ -189,9 +190,24 @@ if ($cache->tryServe($cachePath)) {
 // If quota came before the lock, 100 concurrent MISS workers would each
 // burn quota even though only 1 actually generates. Lock + re-check first;
 // peers exit through the cache; the winner pays the quota cost.
+//
+// Lock failure (fopen error or 5s acquisition timeout) → 503. Generation
+// is ~100ms in the steady state; a 5s wait means storage is broken or
+// the system is in cascade. Failing fast prevents dogpile generation
+// (and quota multi-burn) that would happen under degraded fallback.
 // =========================================================================
 $lockHandle = $cache->acquireLock($cachePath);
-if ($lockHandle !== null && $cache->tryServe($cachePath)) {
+if ($lockHandle === null) {
+    http_response_code(503);
+    header('Retry-After: 1');
+    header('X-Lock: DEGRADED-FAIL');
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'singleflight lock unavailable, retry shortly']);
+    exit;
+}
+
+if ($cache->tryServe($cachePath)) {
+    header('X-Lock: HIT-AFTER-LOCK');
     $cache->releaseLock($lockHandle);
     exit;
 }
@@ -218,6 +234,7 @@ $cache->releaseLock($lockHandle);
 header('Content-Type: image/gif');
 header('Content-Length: ' . strlen($gifData));
 header('X-Cache: MISS');
+header('X-Lock: ACQUIRED');
 $cache->setCacheHeaders();
 echo $gifData;
 

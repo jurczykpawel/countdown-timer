@@ -83,14 +83,24 @@ final class RateLimiter
     }
 
     /**
-     * Get real client IP. Only trusts CF-Connecting-IP (set by Cloudflare,
-     * cannot be spoofed by end users). Falls back to REMOTE_ADDR (TCP source IP).
-     * NEVER trust X-Forwarded-For — it can be set by anyone.
+     * Get real client IP.
+     *
+     * Trust order:
+     *   1. CF-Connecting-IP — but ONLY when REMOTE_ADDR is in a Cloudflare
+     *      range. Otherwise an attacker hitting the origin directly can
+     *      spoof the header and bypass per-IP rate limiting.
+     *   2. REMOTE_ADDR — TCP source IP, can't be forged at L7.
+     * Never trust X-Forwarded-For — set by anyone.
      */
     public static function clientIp(): string
     {
-        return $_SERVER['HTTP_CF_CONNECTING_IP']
-            ?? $_SERVER['REMOTE_ADDR']
-            ?? '0.0.0.0';
+        $remote = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+        $cfHeader = $_SERVER['HTTP_CF_CONNECTING_IP'] ?? '';
+        if ($cfHeader !== ''
+                && filter_var($cfHeader, FILTER_VALIDATE_IP) !== false
+                && CloudflareIps::isFromCf($remote)) {
+            return $cfHeader;
+        }
+        return $remote;
     }
 }

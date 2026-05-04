@@ -160,6 +160,37 @@ Add to cron (`/etc/cron.d/timer-gif-cache`):
 0 3 * * * www-data php -r "require '/var/www/timer/src/ApiKeyAuth.php'; ApiKeyAuth::cleanupCounters();"
 ```
 
+## Operations
+
+### Throughput expectations
+
+Per-IP rate limit defaults to **30 req/min** (`RateLimiter` in `index.php`). This caps single-IP origin throughput at 0.5 RPS — by design, to absorb generic abuse without queuing PHP-FPM.
+
+Higher aggregate throughput observed in load tests (e.g. ~600 RPS sustained on a 1 GB VPS for cached responses) **assumes either**:
+
+- A CDN in front (Cloudflare, etc.) so origin sees diverse edge POP IPs rather than one client, **or**
+- A temporarily raised `RateLimiter` for benchmarking only.
+
+Without a CDN, plan capacity in terms of **unique client IPs**, not raw RPS. A campaign with N concurrent recipients hitting an evergreen timer once each = N requests bounded by per-IP-per-minute, not by PHP throughput.
+
+### CF-Connecting-IP trust
+
+`RateLimiter::clientIp()` only honors `CF-Connecting-IP` when `REMOTE_ADDR` is in a Cloudflare IP range (loaded from `/var/cache/timer-gif/cf-ips.txt`, fallback to bundled `cf-ips.txt`). If the origin is reachable directly (no firewall + no `sp-cf-lock` Caddy snippet from StackPilot), spoofed headers from non-CF clients are ignored. **Refresh `cf-ips.txt` weekly** — StackPilot install handles this via cron.
+
+### Singleflight + degraded mode
+
+Cache MISS path acquires an exclusive `flock` so only one worker generates per cache key per bucket. If lock acquisition fails (filesystem broken, or 5s timeout under cascade), the response is **`503 Retry-After: 1`** — the system will not silently fall back to dogpile generation. Diagnostic header `X-Lock` reports `ACQUIRED` (this worker generated), `HIT-AFTER-LOCK` (peer found cache after waiting), or `DEGRADED-FAIL` (lock unavailable — server returned 503).
+
+### Per-key controls (`keys.json`)
+
+Recommended hardening for keys exposed to untrusted callers:
+
+- `max_width`, `max_height`, `max_seconds` — clamp generation parameters per tier
+- `allow_remote_bg: false` — default; opt in only when needed
+- `bg_domains: ["cdn.example.com"]` — restrict remote `bgImage` hosts (exact or subdomain match)
+
+See `keys.json.example` for full schema.
+
 ## Tech Stack
 
 - PHP 8.1+ (GD extension for image generation)
