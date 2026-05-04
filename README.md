@@ -220,6 +220,27 @@ Recommended hardening for keys exposed to untrusted callers:
 
 See `keys.json.example` for full schema.
 
+## Tests
+
+Two suites, each with its own runner:
+
+```bash
+# Unit tests (no server needed): atomic counters, tz parsing, UidStore,
+# CloudflareIps, cache key determinism, singleflight serialisation.
+bash tests/run.sh unit
+
+# Integration tests (against a live origin or CDN URL): landing page,
+# 403 / ETag / 304 / Vary / past-time cache headers, tz key distinction.
+TIMER_URL=https://timer.example.com TIMER_KEY=tk_xxx bash tests/run.sh integration
+```
+
+CI runs the unit suite on every push / PR across PHP 8.1 / 8.3 / 8.4. The
+integration suite is opt-in (requires `TIMER_URL` repo variable plus
+`TIMER_TEST_KEY` secret). Tests target the regressions surfaced during
+the recent hardening pass: counter races, cache stampede, quota burnt
+on cache HITs, timezone parsing drift, lock-failure fallback, default
+deny on remote backgrounds, and CF-Connecting-IP spoofing.
+
 ## Tech Stack
 
 - PHP 8.1+ (GD extension for image generation)
