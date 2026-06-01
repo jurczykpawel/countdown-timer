@@ -3,7 +3,7 @@
 ## Overview
 
 PHP service generating animated countdown timer GIFs for emails and web.
-Deployed at `timer.sellf.app` on Mikrus steve160 (Caddy + PHP 8.4-FPM).
+Deployed at `timer.techskills.academy` on Mikrus steve160 (Caddy + PHP 8.4-FPM).
 
 ## Stack
 
@@ -30,13 +30,13 @@ fonts/               # TTF fonts (BebasNeue, Inter-Bold, Montserrat-Bold)
 
 ```
 # Absolute timer
-https://timer.sellf.app/?preset=dark-boxes&time=2026-12-25T00:00:00
+https://timer.techskills.academy/?preset=dark-boxes&time=2026-12-25T00:00:00
 
 # Evergreen timer
-https://timer.sellf.app/?preset=gradient-cards&evergreen=2h
+https://timer.techskills.academy/?preset=gradient-cards&evergreen=2h
 
 # Custom params
-https://timer.sellf.app/?time=2026-12-25&width=480&height=100&boxColor=1a1a2e&fontColor=fff&font=Montserrat-Bold&boxStyle=rounded
+https://timer.techskills.academy/?time=2026-12-25&width=480&height=100&boxColor=1a1a2e&fontColor=fff&font=Montserrat-Bold&boxStyle=rounded
 ```
 
 ## Presets
@@ -67,4 +67,4 @@ Evergreen timers use bucketing (10-30s intervals) to maximize cache reuse.
 
 - Dir: `/var/www/timer/`
 - Cache: `/var/cache/timer-gif/`
-- Domain: `timer.sellf.app` (Cloudflare proxied)
+- Domain: `timer.techskills.academy` (Cloudflare proxied)
