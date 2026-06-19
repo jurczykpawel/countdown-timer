@@ -836,12 +836,24 @@ footer {
       document.head.appendChild(u);
     }
 
-    function onAnalyticsGranted() {
+    function onConsentChange() {
+      var analytics = CookieConsent.acceptedCategory('analytics');
+      var marketing = CookieConsent.acceptedCategory('marketing');
       window.gtag('consent', 'update', {
-        analytics_storage: 'granted'
+        analytics_storage: analytics ? 'granted' : 'denied'
       });
-      loadGTM();
-      loadUmami();
+      window.gtag('consent', 'update', {
+        ad_storage: marketing ? 'granted' : 'denied',
+        ad_user_data: marketing ? 'granted' : 'denied',
+        ad_personalization: marketing ? 'granted' : 'denied'
+      });
+      // GTM holds individual tags behind their own consent gates; load it when EITHER is granted.
+      if (analytics || marketing) {
+        loadGTM();
+      }
+      if (analytics) {
+        loadUmami();
+      }
     }
 
     CookieConsent.run({
@@ -854,18 +866,17 @@ footer {
           enabled: true,
           readOnly: true
         },
-        analytics: {}
+        analytics: {},
+        marketing: {}
       },
       onFirstConsent: function (param) {
-        if (CookieConsent.acceptedCategory('analytics')) onAnalyticsGranted();
+        onConsentChange();
       },
       onChange: function (param) {
-        if (CookieConsent.acceptedCategory('analytics')) {
-          onAnalyticsGranted();
-        }
+        onConsentChange();
       },
       onConsent: function (param) {
-        if (CookieConsent.acceptedCategory('analytics')) onAnalyticsGranted();
+        onConsentChange();
       },
       language: {
         default: 'en',
@@ -894,6 +905,11 @@ footer {
                   title: 'Analytics',
                   description: 'These cookies help us measure usage via Google Tag Manager and Umami. They are only set with your consent.',
                   linkedCategory: 'analytics'
+                },
+                {
+                  title: 'Marketing',
+                  description: 'Meta Pixel — ad measurement and audience building (remarketing). Sets _fbp/_fbc cookies.',
+                  linkedCategory: 'marketing'
                 }
               ]
             }
