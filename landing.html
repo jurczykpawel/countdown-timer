@@ -5,6 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Countdown Timer GIF - Open Source Email &amp; Web Timer Generator</title>
 <meta name="description" content="Self-hosted animated countdown timer GIF generator. 5 presets, boxes, evergreen timers, API key auth, multi-layer caching. MIT licensed.">
+
+<!-- ============================================================
+     ANALYTICS + CONSENT CONFIG
+     GTM container id  -> GTM-NKKNF7QP
+     Umami website id  -> d02e139d-888c-42e5-9fdb-9dfdbf49b969
+     ============================================================ -->
+<script>window.__TIMER_GTM_ID = "GTM-NKKNF7QP";</script>
+
+<!-- Google Consent Mode V2 defaults (everything denied until opt-in). Set BEFORE GTM loads. -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag("consent", "default", {
+    ad_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
+    analytics_storage: "denied",
+    functionality_storage: "granted",
+    personalization_storage: "denied",
+    security_storage: "granted",
+    wait_for_update: 500
+  });
+  window.dataLayer.push({ source_brand: "timer" });
+</script>
+
+<!-- vanilla-cookieconsent v3 (CDN, jsdelivr) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.css">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -364,6 +393,11 @@ footer {
 </style>
 </head>
 <body>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NKKNF7QP"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
 
 <!-- Top Bar -->
 <nav class="topbar">
@@ -759,11 +793,116 @@ footer {
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="18" r="1" fill="currentColor"/></svg>
         StackPilot
       </a>
+      <a href="#" data-cc="show-preferences">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="15" cy="10" r="1" fill="currentColor"/><circle cx="10" cy="14" r="1" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/></svg>
+        Cookie Preferences
+      </a>
     </div>
     <p class="footer-copy">Built by <a href="https://github.com/jurczykpawel" style="color:var(--text-secondary)">Pawel Jurczyk</a> &middot; Powered by <a href="https://sellf.app" style="color:var(--text-secondary)">Sellf</a></p>
     <p class="footer-copy">Part of the <a href="https://techskills.academy" style="color:var(--text-secondary)">techskills.academy</a> ecosystem &middot; <a href="https://techskills.academy/narzedzia" style="color:var(--text-secondary)">Tools</a> &middot; <a href="https://techskills.academy/#ekosystem" style="color:var(--text-secondary)">Open source</a></p>
   </div>
 </footer>
+
+<!-- vanilla-cookieconsent v3 (CDN, jsdelivr) + consent-gated analytics loaders -->
+<script src="https://cdn.jsdelivr.net/gh/orestbida/cookieconsent@3.1.0/dist/cookieconsent.umd.js"></script>
+<script>
+  (function () {
+    var gtmLoaded = false;
+    var umamiLoaded = false;
+
+    function loadGTM() {
+      if (gtmLoaded) return;
+      gtmLoaded = true;
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != 'dataLayer' ? '&l=' + l : '';
+        j.async = true;
+        j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', window.__TIMER_GTM_ID);
+    }
+
+    function loadUmami() {
+      if (umamiLoaded) return;
+      umamiLoaded = true;
+      var u = document.createElement('script');
+      u.defer = true;
+      u.src = 'https://stats.techskills.academy/script.js';
+      u.setAttribute('data-website-id', 'd02e139d-888c-42e5-9fdb-9dfdbf49b969');
+      u.setAttribute('data-domains', 'timer.techskills.academy');
+      document.head.appendChild(u);
+    }
+
+    function onAnalyticsGranted() {
+      window.gtag('consent', 'update', {
+        analytics_storage: 'granted'
+      });
+      loadGTM();
+      loadUmami();
+    }
+
+    CookieConsent.run({
+      guiOptions: {
+        consentModal: { layout: 'box', position: 'bottom left' },
+        preferencesModal: { layout: 'box' }
+      },
+      categories: {
+        necessary: {
+          enabled: true,
+          readOnly: true
+        },
+        analytics: {}
+      },
+      onFirstConsent: function (param) {
+        if (CookieConsent.acceptedCategory('analytics')) onAnalyticsGranted();
+      },
+      onChange: function (param) {
+        if (CookieConsent.acceptedCategory('analytics')) {
+          onAnalyticsGranted();
+        }
+      },
+      onConsent: function (param) {
+        if (CookieConsent.acceptedCategory('analytics')) onAnalyticsGranted();
+      },
+      language: {
+        default: 'en',
+        translations: {
+          en: {
+            consentModal: {
+              title: 'We use cookies',
+              description: 'We use cookies to understand how this tool is used. Analytics cookies are only set if you accept them.',
+              acceptAllBtn: 'Accept all',
+              acceptNecessaryBtn: 'Reject all',
+              showPreferencesBtn: 'Manage preferences'
+            },
+            preferencesModal: {
+              title: 'Cookie preferences',
+              acceptAllBtn: 'Accept all',
+              acceptNecessaryBtn: 'Reject all',
+              savePreferencesBtn: 'Save preferences',
+              closeIconLabel: 'Close',
+              sections: [
+                {
+                  title: 'Strictly necessary',
+                  description: 'These cookies are required for the site to function and cannot be switched off.',
+                  linkedCategory: 'necessary'
+                },
+                {
+                  title: 'Analytics',
+                  description: 'These cookies help us measure usage via Google Tag Manager and Umami. They are only set with your consent.',
+                  linkedCategory: 'analytics'
+                }
+              ]
+            }
+          }
+        }
+      }
+    });
+  })();
+</script>
 
 </body>
 </html>
