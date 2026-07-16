@@ -255,6 +255,13 @@ Countdown Timer is a standalone tool. It also works great with:
 - **[Sellf](https://github.com/jurczykpawel/sellf)** - self-hosted platform for selling digital products (checkout, access control, magic link auth). Add countdown timers to product launches and limited offers.
 - **[StackPilot](https://github.com/jurczykpawel/stackpilot)** - deploy Countdown Timer (and 30+ other apps) to any VPS with a single command.
 
+## Support
+
+Free, self-hosted, no watermarks. If this little tool powers the urgency in your
+campaigns, you can buy me a donut:
+
+[![🍩 Buy me a donut](https://img.shields.io/badge/🍩_Buy_me_a_donut-FFDD00)](https://sellf.techskills.academy/checkout/tip-countdown-timer?utm_source=github&utm_medium=readme&utm_campaign=tip-jar)
+
 ## License
 
 [MIT](LICENSE)
