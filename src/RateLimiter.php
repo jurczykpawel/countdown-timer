@@ -87,8 +87,8 @@ final class RateLimiter
      *
      * Trust order:
      *   1. CF-Connecting-IP — but ONLY when REMOTE_ADDR is in a Cloudflare
-     *      range. Otherwise an attacker hitting the origin directly can
-     *      spoof the header and bypass per-IP rate limiting.
+     *      range. For other peers, use the TCP source address for
+     *      consistent per-IP rate limiting.
      *   2. REMOTE_ADDR — TCP source IP, can't be forged at L7.
      * Never trust X-Forwarded-For — set by anyone.
      */

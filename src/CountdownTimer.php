@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 require_once __DIR__ . '/AnimatedGif.php';
+require_once __DIR__ . '/RenderSpec.php';
+require_once __DIR__ . '/RemoteBackground.php';
 
 /**
  * Generates animated countdown timer GIFs.
@@ -14,6 +16,8 @@ require_once __DIR__ . '/AnimatedGif.php';
  */
 class CountdownTimer
 {
+    public function __construct(private ?RemoteBackground $remoteBackground = null) {}
+
     // Dimensions
     private int $width;
     private int $height;
@@ -23,7 +27,6 @@ class CountdownTimer
     // Animation
     private int $delay = 100;
     private int $seconds = 30;
-    private int $maxSeconds = 120;
     private array $frames = [];
     private array $delays = [];
     private int $loops = 0;
@@ -31,11 +34,11 @@ class CountdownTimer
     // Date
     private array $date = [];
     private bool $initialShowDays = true;
+    private array $layoutBackgrounds = [];
 
     // Font
     private string $fontPath;
     private int $fontSize = 0;
-    private string $fontDir;
 
     // Colors (RGB arrays)
     private array $boxColor;
@@ -53,18 +56,13 @@ class CountdownTimer
     private string $separator = ':';
 
     // Layout
-    private bool $autoLayout = false;
     private bool $fontSizeProvided = false;
-    private bool $xProvided = false;
     private bool $yProvided = false;
     private int $labelFontSize = 15;
     private int $labelsBaselineY = 0;
-    private int $pairWidth = 0;
-    private int $colonWidth = 0;
     private array $labelCenters4 = [];
     private array $labelCenters3 = [];
     private array $labelWidths = [];
-    private int $characterWidth = 0;
     private int $characterHeight = 0;
 
     // Background
@@ -72,10 +70,7 @@ class CountdownTimer
     private string $bgFit = 'cover';
     private bool $transparentBg = false;
     private array $transparentKey = [255, 0, 255];
-    private $preparedBg = null;
-
-    // Evergreen
-    private ?string $evergreenSpec = null;
+    private ?GdImage $preparedBg = null;
 
     // Pre-computed box rectangles for each digit group [x1, y1, x2, y2]
     private array $groupBoxes = [];
@@ -84,107 +79,63 @@ class CountdownTimer
      * Generate the countdown GIF and return raw bytes.
      * Does NOT output headers or echo — caller handles that.
      */
-    public function generate(array $settings): string
+    public function generate(array|RenderSpec $settings): string
     {
-        $this->init($settings);
+        $spec = $settings instanceof RenderSpec ? $settings : new RenderSpec($settings);
+        $this->frames = $this->delays = $this->labelWidths = $this->layoutBackgrounds = [];
+        $this->init($spec);
         $this->computeLayout();
         $this->createFrames();
         return $this->encodeGif();
     }
 
-    private function init(array $s): void
+    private function init(RenderSpec $spec): void
     {
-        $this->width = max(1, (int)($s['width'] ?? 640));
-        $this->height = max(1, (int)($s['height'] ?? 140));
+        $s = $spec->params;
+        $this->width = $s['width'];
+        $this->height = $s['height'];
 
-        $this->fontSizeProvided = isset($s['fontSize']) && (int)$s['fontSize'] > 0;
-        $this->fontSize = $this->fontSizeProvided ? (int)$s['fontSize'] : 0;
-        $this->xProvided = isset($s['xOffset']);
+        $this->fontSizeProvided = $s['fontSize'] > 0;
+        $this->fontSize = $s['fontSize'];
         $this->yProvided = isset($s['yOffset']);
-        $this->xOffset = (int)($s['xOffset'] ?? 0);
-        $this->yOffset = (int)($s['yOffset'] ?? 0);
-
-        $this->seconds = max(0, min($this->maxSeconds, (int)($s['seconds'] ?? 30)));
-        $this->delay = max(0, (int)($s['delay'] ?? 100));
-
-        // Colors
-        $this->boxColor = self::hex2rgb((string)($s['boxColor'] ?? '000'));
-        $this->fontColor = self::hex2rgb((string)($s['fontColor'] ?? 'fff'));
-        $this->labelColor = self::hex2rgb((string)($s['labelColor'] ?? $s['fontColor'] ?? 'fff'));
-        $this->sepColor = self::hex2rgb((string)($s['sepColor'] ?? $s['fontColor'] ?? 'fff'));
-
-        // Box style
-        $this->boxStyle = $s['boxStyle'] ?? 'none';
-        if (isset($s['boxBg'])) $this->boxBg = self::hex2rgb((string)$s['boxBg']);
-        if (isset($s['boxBgEnd'])) $this->boxBgEnd = self::hex2rgb((string)$s['boxBgEnd']);
-        if (isset($s['boxBorder'])) $this->boxBorder = self::hex2rgb((string)$s['boxBorder']);
-        $this->boxRadius = max(0, (int)($s['boxRadius'] ?? 10));
-        $this->boxPadding = max(0, (int)($s['boxPadding'] ?? 12));
-        $this->separator = $s['separator'] ?? ':';
-
-        // Background
-        $this->transparentBg = !empty($s['transparent']);
-        $this->bgFit = in_array($s['bgFit'] ?? '', ['cover', 'stretch', 'contain'], true)
-            ? $s['bgFit'] : 'cover';
-        $this->bgImagePath = (!empty($s['bgImage']) && is_string($s['bgImage'])) ? $s['bgImage'] : null;
+        $this->xOffset = $s['xOffset'];
+        $this->yOffset = $s['yOffset'] ?? 0;
+        $this->seconds = $s['seconds'];
+        $this->delay = $s['delay'];
+        foreach (['boxColor','fontColor','labelColor','sepColor','boxBg','boxBgEnd','boxBorder'] as $field) {
+            $this->$field = self::hex2rgb($s[$field]);
+        }
+        $this->boxStyle = $s['boxStyle'];
+        $this->boxRadius = $s['boxRadius'];
+        $this->boxPadding = $s['boxPadding'];
+        $this->separator = $s['separator'];
+        $this->transparentBg = $s['transparent'];
+        $this->bgFit = $s['bgFit'];
+        $this->bgImagePath = !empty($s['bgImage']) ? $s['bgImage'] : null;
 
         // Font — validate existence, fail with error GIF if no font available
-        $this->fontDir = dirname(__DIR__) . '/fonts/';
-        $fontName = preg_match('/^[A-Za-z0-9_\-]+$/', (string)($s['font'] ?? ''))
-            ? (string)$s['font'] : 'BebasNeue';
-        $this->fontPath = $this->fontDir . $fontName . '.ttf';
+        $fontDir = dirname(__DIR__) . '/fonts/';
+        $fontName = $s['font'];
+        $this->fontPath = $fontDir . $fontName . '.ttf';
         if (!file_exists($this->fontPath)) {
-            $this->fontPath = $this->fontDir . 'BebasNeue.ttf';
+            $this->fontPath = $fontDir . 'BebasNeue.ttf';
         }
         if (!file_exists($this->fontPath)) {
             // Last resort: find any .ttf in fonts dir
-            $ttfs = glob($this->fontDir . '*.ttf');
+            $ttfs = glob($fontDir . '*.ttf');
             $this->fontPath = $ttfs[0] ?? '';
         }
         if ($this->fontPath === '' || !file_exists($this->fontPath)) {
             throw new \RuntimeException('No font files found in fonts/ directory');
         }
 
-        // Time
-        $tz = 'UTC';
-        if (!empty($s['tz']) && is_string($s['tz'])) {
-            try { new \DateTimeZone($s['tz']); $tz = $s['tz']; } catch (\Exception $e) {}
-        }
-        $timezone = new \DateTimeZone($tz);
-
-        $this->evergreenSpec = (!empty($s['evergreen']) && is_string($s['evergreen']))
-            ? trim($s['evergreen']) : null;
-        $this->date['now'] = new \DateTime('now', $timezone);
-
-        $future = null;
-        if ($this->evergreenSpec) {
-            $interval = $this->parseEvergreenInterval($this->evergreenSpec);
-            if ($interval) {
-                $future = clone $this->date['now'];
-                $future->add($interval);
-            }
-        }
-        if (!$future) {
-            $timeStr = (string)($s['time'] ?? 'now');
-            try {
-                $future = new \DateTime($timeStr, $timezone);
-            } catch (\Exception $e) {
-                $future = clone $this->date['now'];
-                $future->modify('+' . $this->seconds . ' seconds');
-            }
-        }
-        $this->date['futureDate'] = $future;
-        $interval0 = date_diff($this->date['futureDate'], $this->date['now']);
-        $this->initialShowDays = ((int)$interval0->format('%a')) > 0;
+        $this->date['now'] = new DateTime('@'.$spec->reference);
+        $this->date['futureDate'] = new DateTime('@'.$spec->target);
+        $this->initialShowDays = $spec->target - $spec->reference >= 86400;
     }
 
     private function computeLayout(): void
     {
-        // Always compute auto layout for centers, boxes, and label positions.
-        // User-provided fontSize/xOffset/yOffset are respected inside computeAutoLayout
-        // but we always need centers for renderFrame.
-        $this->computeAutoLayout();
-
         // Prepare background image once
         $this->preparedBg = imagecreatetruecolor($this->width, $this->height);
         imageantialias($this->preparedBg, true);
@@ -192,7 +143,6 @@ class CountdownTimer
         if ($this->transparentBg) {
             $keyCol = imagecolorallocate($this->preparedBg, ...$this->transparentKey);
             imagefilledrectangle($this->preparedBg, 0, 0, $this->width - 1, $this->height - 1, $keyCol);
-            imagecolortransparent($this->preparedBg, $keyCol);
         } elseif ($this->bgImagePath) {
             $this->drawBackgroundImage($this->preparedBg, $this->bgImagePath, $this->bgFit);
         } else {
@@ -200,10 +150,7 @@ class CountdownTimer
             imagefilledrectangle($this->preparedBg, 0, 0, $this->width - 1, $this->height - 1, $bgCol);
         }
 
-        // Draw boxes onto base image (they don't change per frame)
-        if ($this->boxStyle !== 'none' && !empty($this->groupBoxes)) {
-            $this->drawBoxes($this->preparedBg);
-        }
+        $this->layoutBackgrounds = [];
     }
 
     // =========================================================================
@@ -219,8 +166,17 @@ class CountdownTimer
 
         for ($i = 0; $i < $frameCount; $i++) {
             $layer = imagecreatetruecolor($this->width, $this->height);
-            imagecopy($layer, $this->preparedBg, 0, 0, 0, 0, $this->width, $this->height);
-
+            $showDays = $remaining - $i >= 86400;
+            $layout = $showDays ? 4 : 3;
+            if (!isset($this->layoutBackgrounds[$layout])) {
+                $this->initialShowDays = $showDays;
+                $this->computeAutoLayout();
+                $base = imagecreatetruecolor($this->width, $this->height);
+                imagecopy($base, $this->preparedBg, 0, 0, 0, 0, $this->width, $this->height);
+                if ($this->boxStyle !== 'none') $this->drawBoxes($base);
+                $this->layoutBackgrounds[$layout] = $base;
+            }
+            imagecopy($layer, $this->layoutBackgrounds[$layout], 0, 0, 0, 0, $this->width, $this->height);
             $this->renderFrame($layer);
             $this->date['now']->modify('+1 second');
         }
@@ -229,10 +185,10 @@ class CountdownTimer
     private function renderFrame($image): void
     {
         $interval = date_diff($this->date['futureDate'], $this->date['now']);
-        $expired = $this->date['futureDate'] < $this->date['now'];
+        $expired = $this->date['futureDate'] <= $this->date['now'];
 
         if ($expired) {
-            $groups = $this->initialShowDays ? ['00', '00', '00', '00'] : ['00', '00', '00'];
+            $groups = ['00', '00', '00'];
             $this->loops = 1;
         } else {
             $days = (int)$interval->format('%a');
@@ -271,7 +227,7 @@ class CountdownTimer
         $centers = ($partsCount === 4 && !empty($this->labelCenters4))
             ? $this->labelCenters4 : $this->labelCenters3;
 
-        // Draw digit groups (use cached '00' width — all 2-digit groups are same width)
+        // Cache measured widths for the digit strings in this layout.
         foreach ($groups as $i => $groupText) {
             if (!isset($centers[$i])) continue;
             $center = $centers[$i];
@@ -289,7 +245,7 @@ class CountdownTimer
 
         // Draw separators between groups (metrics cached once)
         if ($this->separator !== '' && count($groups) > 1) {
-            $sepFontSize = max(6, (int)round($this->fontSize * 0.7));
+            $sepFontSize = max(min(6, $this->fontSize), (int)round($this->fontSize * 0.7));
             if (!isset($this->labelWidths['_sep'])) {
                 $sepBbox = imagettfbbox($sepFontSize, 0, $this->fontPath, $this->separator);
                 $this->labelWidths['_sep'] = (int)ceil(max($sepBbox[2], $sepBbox[4]) - min($sepBbox[0], $sepBbox[6]));
@@ -322,15 +278,12 @@ class CountdownTimer
         // Reduce palette for smaller GIF.
         // For transparent GIFs, preserve the chroma key color in the palette.
         if ($this->transparentBg) {
-            // Force the chroma key into the palette by allocating it first
-            imagetruecolortopalette($image, false, 63); // 63 + 1 reserved for key
-            $keyIdx = imagecolorexact($image, ...$this->transparentKey);
-            if ($keyIdx === -1) {
-                $keyIdx = imagecolorallocate($image, ...$this->transparentKey);
-            }
-            if ($keyIdx !== -1) {
-                imagecolortransparent($image, $keyIdx);
-            }
+            $keyCol = imagecolorexact($image, ...$this->transparentKey);
+            imagecolortransparent($image, $keyCol);
+            imagetruecolortopalette($image, false, 64);
+            $keyIdx = imagecolortransparent($image);
+            if ($keyIdx >= 0) imagecolorset($image, $keyIdx, ...$this->transparentKey);
+
         } else {
             imagetruecolortopalette($image, false, 64);
         }
@@ -340,7 +293,7 @@ class CountdownTimer
         $this->frames[] = ob_get_clean();
         $this->delays[] = $this->delay;
 
-        imagedestroy($image);
+        unset($image);
     }
 
     private function encodeGif(): string
@@ -356,7 +309,7 @@ class CountdownTimer
 
         // Free prepared background
         if ($this->preparedBg) {
-            imagedestroy($this->preparedBg);
+            $this->layoutBackgrounds = [];
             $this->preparedBg = null;
         }
 
@@ -453,6 +406,8 @@ class CountdownTimer
     {
         // This is a simplification — for GIF quality, gradient + rounded is approximated
         // by drawing filled ellipses at corners with the boxBg color (top) and boxBgEnd (bottom)
+        $r = min($r, (int)floor(($x2 - $x1) / 2), (int)floor(($y2 - $y1) / 2));
+        if ($r <= 0) return;
         $topCol = imagecolorallocate($img, ...$this->boxBg);
         $botCol = imagecolorallocate($img, ...$this->boxBgEnd);
         imagefilledellipse($img, $x1 + $r, $y1 + $r, $r * 2, $r * 2, $topCol);
@@ -467,183 +422,71 @@ class CountdownTimer
 
     private function computeAutoLayout(): void
     {
-        $paddingX = (int)round($this->width * 0.04);
-        $paddingY = (int)round($this->height * 0.06);
-        $groupCount = $this->initialShowDays ? 4 : 3;
-        // Use widest expected text for layout measurement.
-        // Days can be 3 digits (e.g. 365), so measure with '000' if >99 days.
-        $interval0 = date_diff($this->date['futureDate'], $this->date['now']);
-        $dayCount = (int)$interval0->format('%a');
-        $dayDigits = $dayCount >= 100 ? '000' : '00';
-        $targetText = $this->initialShowDays
-            ? "{$dayDigits}:00:00:00"
-            : '00:00:00';
-
-        // Binary search for max font size
-        $bbox = function(int $size, string $text): array {
-            $result = @imagettfbbox($size, 0, $this->fontPath, $text);
-            if ($result === false) {
-                return [0, 0, $size, 0, $size, -$size, 0, -$size]; // fallback box
-            }
-            return $result;
+        $count = $this->initialShowDays ? 4 : 3;
+        $remaining = max(0, $this->date['futureDate']->getTimestamp() - $this->date['now']->getTimestamp());
+        $digits = max(2, strlen((string)intdiv($remaining, 86400)));
+        $texts = $count === 4 ? [str_repeat('0', $digits), '00', '00', '00'] : ['00', '00', '00'];
+        $labels = $count === 4 ? ['DNI','GODZIN','MINUT','SEKUND'] : ['GODZIN','MINUT','SEKUND'];
+        $measure = function(int $size, string $text): array {
+            $bb = imagettfbbox($size, 0, $this->fontPath, $text);
+            return [max($bb[0],$bb[2],$bb[4],$bb[6])-min($bb[0],$bb[2],$bb[4],$bb[6]),
+                max($bb[1],$bb[3],$bb[5],$bb[7])-min($bb[1],$bb[3],$bb[5],$bb[7]),
+                min($bb[1],$bb[3],$bb[5],$bb[7])];
         };
-        $dim = function (array $bb): array {
-            $xs = [$bb[0], $bb[2], $bb[4], $bb[6]];
-            $ys = [$bb[1], $bb[3], $bb[5], $bb[7]];
-            return [(int)ceil(max($xs) - min($xs)), (int)ceil(max($ys) - min($ys)), (int)min($ys), (int)max($ys)];
-        };
-
-        $hasBoxes = $this->boxStyle !== 'none';
-        // Extra space needed for boxes
-        $boxExtraW = $hasBoxes ? ($this->boxPadding * 2 * $groupCount + 8 * ($groupCount - 1)) : 0;
-        $boxExtraH = $hasBoxes ? ($this->boxPadding * 2) : 0;
-
-        if ($this->fontSizeProvided) {
-            $bestSize = $this->fontSize;
-        } else {
-            $low = 6;
-            $high = max(8, (int)floor(min($this->width, $this->height) * 1.5));
-            $bestSize = 12;
-
-            while ($low <= $high) {
-                $mid = (int)floor(($low + $high) / 2);
-                [$wNum, $hNum] = $dim($bbox($mid, $targetText));
-                $labelSize = max(6, (int)round($mid * 0.30));
-                $gap = max(4, (int)round($mid * 0.20));
-                [, $hLab] = $dim($bbox($labelSize, 'SEKUND'));
-
-                $totalW = $wNum + $boxExtraW + 2 * $paddingX;
-                $totalH = $hNum + $boxExtraH + $gap + $hLab + 2 * $paddingY;
-
-                if ($totalW <= $this->width && $totalH <= $this->height) {
-                    $bestSize = $mid;
-                    $low = $mid + 1;
-                } else {
-                    $high = $mid - 1;
+        $boxes = $this->boxStyle !== 'none';
+        $high = $this->fontSizeProvided ? $this->fontSize : min($this->height, $this->width);
+        // Normal pass keeps the configured padding and a 6px font floor. Only when even that
+        // overflows the canvas does a compact pass drop padding and shrink the font further.
+        foreach ([false, true] as $compact) {
+            $padding = $boxes && !$compact ? $this->boxPadding : 0;
+            $metrics = function(int $size) use ($measure, $texts, $labels, $padding, $boxes, $compact): array {
+                $floor = $compact ? 1 : 6;
+                $labelSize = max(min($floor, $size), (int)round($size * 0.3));
+                $widths = [];
+                foreach ($texts as $i=>$text) {
+                    $widths[] = max($measure($size, $text)[0], $measure($labelSize, $labels[$i])[0]) + 2*$padding;
                 }
+                $sepWidth = $measure(max(min($floor, $size),(int)round($size*.7)), $this->separator)[0]+4;
+                $space = $boxes ? ($compact ? $sepWidth : max(8, $sepWidth))
+                    : $measure($size, $this->separator)[0]+4;
+                [, $height, $top] = $measure($size, '00');
+                [, $labelHeight, $labelTop] = $measure($labelSize, 'SEKUND');
+                $gap = max($compact ? 1 : 4,(int)round($size*.2));
+                return [$widths, $space, $height, $top, $labelSize, $labelHeight, $labelTop, $gap];
+            };
+            $low = $compact ? 1 : 6;
+            $hi = $high;
+            $size = $compact ? 1 : 6;
+            $fits = false;
+            while ($low <= $hi) {
+                $mid = intdiv($low+$hi,2);
+                [$widths,$space,$height,,,$labelHeight,,$gap] = $metrics($mid);
+                if (array_sum($widths)+$space*($count-1) <= $this->width*.92
+                    && $height+2*$padding+$gap+$labelHeight <= $this->height*.88) {
+                    $size=$mid; $low=$mid+1; $fits=true;
+                } else { $hi=$mid-1; }
             }
+            if ($fits) break;
         }
-
-        $this->fontSize = $bestSize;
-        $this->labelFontSize = max(6, (int)round($bestSize * 0.30));
-        $gap = max(4, (int)round($bestSize * 0.20));
-
-        // Measure final metrics
-        $bbNum = $bbox($bestSize, $targetText);
-        [$wNum, $hNum, $yMinNum, $yMaxNum] = $dim($bbNum);
-        $bbLab = $bbox($this->labelFontSize, 'SEKUND');
-        [$wLabAny, $hLabAny, $yMinLab] = $dim($bbLab);
-
-        // Compute pair width and colon width
-        [$this->pairWidth] = $dim($bbox($bestSize, '00'));
-        [$this->colonWidth] = $dim($bbox($bestSize, ':'));
-
-        // Total content width with boxes
-        $totalContentW = $hasBoxes
-            ? ($this->pairWidth + $this->boxPadding * 2) * $groupCount + 8 * ($groupCount - 1)
-            : $wNum;
-
-        // Horizontal centering
-        $contentStartX = (int)round(($this->width - $totalContentW) / 2);
-
-        // Vertical centering
-        $totalH = $hNum + $boxExtraH + $gap + $hLabAny;
-        $yTop = (int)max($paddingY, floor(($this->height - $totalH) / 2));
-
-        if (!$this->yProvided) {
-            $this->yOffset = (int)round($yTop + ($hasBoxes ? $this->boxPadding : 0) - $yMinNum);
-        }
-
-        $labelTop = $yTop + $hNum + ($hasBoxes ? $this->boxPadding * 2 : 0) + $gap;
-        $this->labelsBaselineY = (int)round($labelTop - $yMinLab);
-
-        // Compute centers and box positions for each group
-        $this->labelCenters4 = [];
-        $this->labelCenters3 = [];
+        $this->fontSize = $size;
+        [$widths,$space,$height,$top,$labelSize,$labelHeight,$labelTop,$gap] = $metrics($size);
+        $this->labelFontSize = $labelSize;
+        $x = (int)round(($this->width-array_sum($widths)-$space*($count-1))/2) + $this->xOffset;
+        $y = (int)round(($this->height-$height-2*$padding-$gap-$labelHeight)/2);
+        if (!$this->yProvided) $this->yOffset = $y+$padding-$top;
+        $this->labelsBaselineY = $y+$height+2*$padding+$gap-$labelTop;
+        $centers = [];
         $this->groupBoxes = [];
-
-        $boxWidth = $this->pairWidth + $this->boxPadding * 2;
-        $spacing = $hasBoxes ? 8 : 0;
-
-        for ($g = 0; $g < $groupCount; $g++) {
-            if ($hasBoxes) {
-                $gx = $contentStartX + $g * ($boxWidth + $spacing);
-                $center = $gx + $boxWidth / 2;
-
-                // Box rect
-                $bx1 = $gx;
-                $by1 = $yTop;
-                $bx2 = $gx + $boxWidth;
-                $by2 = $yTop + $hNum + $this->boxPadding * 2;
-                $this->groupBoxes[] = [$bx1, $by1, $bx2, $by2];
-            } else {
-                // No boxes: compute from colon-separated text positions
-                $center = $contentStartX + $g * ($this->pairWidth + $this->colonWidth) + $this->pairWidth / 2;
-            }
-
-            if ($groupCount === 4) {
-                $this->labelCenters4[] = $center;
-            }
-            if ($groupCount === 3 || $g >= ($groupCount - 3)) {
-                // For 4-group, also compute 3-group centers (last 3 positions)
-            }
+        foreach ($widths as $width) {
+            $centers[] = $x+$width/2;
+            $this->groupBoxes[] = [$x,$y,$x+$width,$y+$height+2*$padding];
+            $x += $width+$space;
         }
-
-        // 3-group centers (used when days=0 at runtime)
-        if ($groupCount === 4) {
-            // Recompute for 3 groups
-            $gc3 = 3;
-            $totalW3 = $hasBoxes
-                ? ($this->pairWidth + $this->boxPadding * 2) * $gc3 + $spacing * ($gc3 - 1)
-                : $this->pairWidth * $gc3 + $this->colonWidth * ($gc3 - 1);
-            $startX3 = (int)round(($this->width - $totalW3) / 2);
-
-            for ($g = 0; $g < $gc3; $g++) {
-                if ($hasBoxes) {
-                    $gx = $startX3 + $g * ($boxWidth + $spacing);
-                    $this->labelCenters3[] = $gx + $boxWidth / 2;
-                } else {
-                    $this->labelCenters3[] = $startX3 + $g * ($this->pairWidth + $this->colonWidth) + $this->pairWidth / 2;
-                }
-            }
-        } else {
-            $this->labelCenters3 = $this->labelCenters4 ?: [];
-            // Centers already computed for 3 groups above
-            if (empty($this->labelCenters3)) {
-                $this->labelCenters3 = $this->labelCenters4;
-            }
-        }
-
-        // If it was a 3-group layout from start, labelCenters3 should be used
-        if ($groupCount === 3) {
-            $this->labelCenters3 = [];
-            for ($g = 0; $g < 3; $g++) {
-                if ($hasBoxes) {
-                    $gx = $contentStartX + $g * ($boxWidth + $spacing);
-                    $this->labelCenters3[] = $gx + $boxWidth / 2;
-                } else {
-                    $this->labelCenters3[] = $contentStartX + $g * ($this->pairWidth + $this->colonWidth) + $this->pairWidth / 2;
-                }
-            }
-        }
-
-        // xOffset for non-box mode
-        if (!$this->xProvided && !$hasBoxes) {
-            $this->xOffset = $contentStartX;
-        }
-
-        // Pre-compute character metrics
-        $cdim = $bbox($bestSize, '0');
-        $xs = [$cdim[0], $cdim[2], $cdim[4], $cdim[6]];
-        $ys = [$cdim[1], $cdim[3], $cdim[5], $cdim[7]];
-        $this->characterWidth = (int)ceil(max($xs) - min($xs));
-        $this->characterHeight = (int)ceil(max($ys) - min($ys));
-
-        // Pre-compute label widths
-        foreach (['DNI', 'GODZIN', 'MINUT', 'SEKUND'] as $lbl) {
-            [$wLbl] = $dim($bbox($this->labelFontSize, $lbl));
-            $this->labelWidths[$lbl] = (int)$wLbl;
-        }
+        if ($count === 4) $this->labelCenters4 = $centers;
+        else $this->labelCenters3 = $centers;
+        $this->characterHeight = $height;
+        $this->labelWidths = [];
+        foreach ($labels as $label) $this->labelWidths[$label] = $measure($labelSize,$label)[0];
     }
 
     // =========================================================================
@@ -654,6 +497,9 @@ class CountdownTimer
     {
         $src = $this->loadImageAny($path);
         if (!$src) {
+            if ($this->remoteBackground !== null && preg_match('~^https?://~i', $path)) {
+                throw new RemoteBackgroundUnavailable();
+            }
             $bgCol = imagecolorallocate($target, ...$this->boxColor);
             imagefilledrectangle($target, 0, 0, $this->width - 1, $this->height - 1, $bgCol);
             return;
@@ -677,89 +523,38 @@ class CountdownTimer
             $sy = (int)max(0, floor(($sh - $ch) / 2));
             imagecopyresampled($target, $src, 0, 0, $sx, $sy, $tw, $th, $cw, $ch);
         }
-        imagedestroy($src);
+        unset($src);
     }
 
     private function loadImageAny(string $path)
     {
         if (preg_match('~^https?://~i', $path)) {
-            // SSRF protection: block private/internal IPs
-            $host = parse_url($path, PHP_URL_HOST);
-            if ($host === false || $host === null) return null;
-            $ips = gethostbynamel($host) ?: [];
-            foreach ($ips as $ip) {
-                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false) {
-                    return null; // private/reserved IP blocked
-                }
+            $data = $this->remoteBackground?->fetch($path);
+        } else {
+            if (preg_match('~^\s*(?:[a-z][a-z0-9+.-]*:|//)~i', $path)) return null;
+            $base = realpath(dirname(__DIR__) . '/images');
+            $real = $base === false ? false : realpath($base . '/' . basename($path));
+            if ($real === false || !str_starts_with($real, $base . DIRECTORY_SEPARATOR)
+                || !is_file($real)) return null;
+            $file = @fopen($real, 'rb');
+            if ($file === false) return null;
+            try {
+                $data = stream_get_contents($file, RemoteBackground::MAX_BYTES + 1);
+            } finally {
+                fclose($file);
             }
-
-            $ctx = stream_context_create([
-                'http' => [
-                    'timeout' => 2,
-                    'max_redirects' => 0,   // block redirects (redirect-based SSRF)
-                    'follow_location' => 0,
-                    'user_agent' => 'CountdownTimer/2.0',
-                ],
-                'https' => [
-                    'timeout' => 2,
-                    'max_redirects' => 0,
-                    'follow_location' => 0,
-                    'user_agent' => 'CountdownTimer/2.0',
-                ],
-            ]);
-            $data = @file_get_contents($path, false, $ctx);
-            if ($data === false) return null;
-            // Size limit: 2MB max for background images
-            if (strlen($data) > 2 * 1024 * 1024) return null;
-            return @imagecreatefromstring($data) ?: null;
         }
-
-        // Local file: restrict to project images/ directory only
-        $basePath = dirname(__DIR__) . '/images/';
-        $real = realpath($basePath . basename($path));
-        if ($real === false || !str_starts_with($real, realpath($basePath) ?: '')) {
-            return null; // path traversal blocked
-        }
-        if (!file_exists($real)) return null;
-        $type = @exif_imagetype($real);
-        return match ($type) {
-            IMAGETYPE_PNG  => @imagecreatefrompng($real),
-            IMAGETYPE_JPEG => @imagecreatefromjpeg($real),
-            IMAGETYPE_GIF  => @imagecreatefromgif($real),
-            default        => null, // don't fallback to file_get_contents for unknown types
-        };
+        if (!is_string($data) || strlen($data) > RemoteBackground::MAX_BYTES) return null;
+        $size = @getimagesizefromstring($data);
+        if (!$size || $size[0] < 1 || $size[1] < 1 || $size[0] > 4096 || $size[1] > 4096
+            || $size[0] * $size[1] > 4000000
+            || !in_array($size[2], [IMAGETYPE_PNG, IMAGETYPE_JPEG, IMAGETYPE_GIF], true)) return null;
+        return @imagecreatefromstring($data) ?: null;
     }
 
     // =========================================================================
     // HELPERS
     // =========================================================================
-
-    private function parseEvergreenInterval(string $spec): ?\DateInterval
-    {
-        $s = strtolower(trim($spec));
-        $pattern = '/(\d+)\s*(d|day|days|h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds)/i';
-        if (!preg_match_all($pattern, $s, $m, PREG_SET_ORDER)) {
-            try {
-                $dt = new \DateTime('now');
-                $rel = (strpos($s, '+') === false && strpos($s, '-') === false) ? ('+' . $s) : $s;
-                return $dt->diff(new \DateTime($rel));
-            } catch (\Exception $e) { return null; }
-        }
-        $d = $h = $mi = $se = 0;
-        foreach ($m as $match) {
-            $num = (int)$match[1];
-            match ($match[2][0]) {
-                'd' => $d += $num,
-                'h' => $h += $num,
-                'm' => $mi += $num,
-                's' => $se += $num,
-                default => null,
-            };
-        }
-        try {
-            return new \DateInterval(sprintf('P%dDT%dH%dM%dS', $d, $h, $mi, $se));
-        } catch (\Exception $e) { return null; }
-    }
 
     public static function hex2rgb(string $hex): array
     {
@@ -774,3 +569,6 @@ class CountdownTimer
         ];
     }
 }
+
+/** Configured remote background could not be fetched or decoded. */
+final class RemoteBackgroundUnavailable extends RuntimeException {}

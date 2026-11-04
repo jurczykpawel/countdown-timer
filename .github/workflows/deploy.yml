@@ -1,23 +1,40 @@
-name: Deploy to Mikrus
+name: Deploy
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
 jobs:
+  tests:
+    uses: ./.github/workflows/test.yml
+
   deploy:
+    needs: tests
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1
+      - name: Deploy tested commit via SSH
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1
+        env:
+          DEPLOY_SHA: ${{ github.sha }}
         with:
           host: ${{ secrets.MIKRUS_HOST }}
           username: ${{ secrets.MIKRUS_USER }}
           key: ${{ secrets.MIKRUS_SSH_KEY }}
           port: ${{ secrets.MIKRUS_PORT }}
+          envs: DEPLOY_SHA
           script: |
+            set -eu
             cd /var/www/timer
             git fetch origin main
-            git reset --hard origin/main
+            test "$(git rev-parse origin/main)" = "$DEPLOY_SHA"
+            git reset --hard "$DEPLOY_SHA"
+            test "$(git rev-parse HEAD)" = "$DEPLOY_SHA"
             chown -R www-data:www-data /var/www/timer

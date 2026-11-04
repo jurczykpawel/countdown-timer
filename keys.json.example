@@ -1,8 +1,8 @@
 {
-    "_comment": "Remote bgImage URLs are DENIED by default. A key opts in with allow_remote_bg=true and SHOULD also set bg_domains to restrict hosts (exact or subdomain). Granting allow_remote_bg without bg_domains lets the key pin workers fetching arbitrary public hosts (SSRF guards still apply but it's an unnecessary surface).",
+    "_comment": "Remote bgImage URLs are denied by default. Opt-in requires allow_remote_bg=true, PHP cURL with HTTPS support, and a nonempty bg_domains array of valid ASCII domains (exact or subdomain match). Missing or invalid lists return 403; missing cURL returns 503. Prefer HTTPS port 443. Preview is stateless, ignores all backgrounds, and is capped at 480x200 and 5 frames. Rotating a key creates a new UID scope.",
 
     "tk_master_CHANGE_ME": {
-        "name": "Master (Pawel)",
+        "name": "Master",
         "limit": 0,
         "active": true
     },

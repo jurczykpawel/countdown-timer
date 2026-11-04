@@ -14,7 +14,7 @@ declare(strict_types=1);
  *   parse params → key validate (cheap) → per-key clamp + bg whitelist
  *   → IP rate limit → UID resolve → cache check
  *     HIT  → serve (NO quota burn — quota measures generation cost)
- *     MISS → quota counter → singleflight → generate → cache write → serve
+ *     MISS → singleflight → recheck → quota counter → generate → cache write → serve
  */
 
 require_once __DIR__ . '/src/Presets.php';
@@ -45,16 +45,21 @@ if (!$hasTimerParam) {
 // =========================================================================
 // API key resolution (validation only — no quota counter yet)
 // =========================================================================
-$isPreview = isset($_GET['_preview']) && $_GET['_preview'] === '1';
-if ($isPreview) {
-    $_GET['seconds'] = min((int)($_GET['seconds'] ?? 5), 5);
-    $_GET['width']   = min((int)($_GET['width'] ?? 480), 480);
-    $_GET['height']  = min((int)($_GET['height'] ?? 140), 200);
-    unset($_GET['bgImage']);
-    $apiKey = '__preview__';
-} else {
-    $apiKey = $_GET['key'] ?? null;
+$apiKey = ($_GET['_preview'] ?? null) === '1' ? '__preview__' : ($_GET['key'] ?? null);
+$isPreview = $apiKey === '__preview__';
+$renderNow = RenderSpec::now();
+try {
+    RenderSpec::validateQuery($_GET, $isPreview);
+    if (!$isPreview && is_string($apiKey) && strlen($apiKey) > 1024) {
+        throw new InvalidArgumentException('Invalid key');
+    }
+} catch (InvalidArgumentException $e) {
+    http_response_code(400);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Invalid timer parameters']);
+    exit;
 }
+
 
 if ($apiKey === null || $apiKey === '') {
     ApiKeyAuth::denyMissingKey();
@@ -97,16 +102,36 @@ $rawParams = [
     'sepColor'     => $_GET['sepColor'] ?? null,
     'labelColor'   => $_GET['labelColor'] ?? null,
 ];
-// Note: 'key' and 'uid' are NOT in rawParams — they don't affect GIF output
+// Key and UID scope fields are not render parameters.
 
-$params = Presets::apply($rawParams);
+if ($isPreview) {
+    $rawParams['width'] ??= 480;
+    $rawParams['height'] ??= 140;
+    $rawParams['seconds'] ??= 5;
+    $rawParams['bgImage'] = null;
+}
+
+try {
+    $params = RenderSpec::normalize($rawParams);
+} catch (InvalidArgumentException $e) {
+    http_response_code(400);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Invalid timer parameters']);
+    exit;
+}
 
 // =========================================================================
 // Per-key limits — clamp params and validate bgImage
 // (applied BEFORE cache key so a key's tier shapes its own cache space)
 // =========================================================================
-$globalCaps = ['width' => 1200, 'height' => 400, 'seconds' => 120];
+$globalCaps = $isPreview
+    ? ['width' => 480, 'height' => 200, 'seconds' => 5]
+    : ['width' => 1200, 'height' => 400, 'seconds' => 120];
 $globalMins = ['width' => 100,  'height' => 40,  'seconds' => 1];
+
+if ($isPreview) {
+    $params['bgImage'] = null;
+}
 
 $capW = min($globalCaps['width'],   (int)($keyConfig['max_width']   ?? $globalCaps['width']));
 $capH = min($globalCaps['height'],  (int)($keyConfig['max_height']  ?? $globalCaps['height']));
@@ -119,38 +144,25 @@ $params['boxColor']  = $params['boxColor']  ?? '000';
 $params['fontColor'] = $params['fontColor'] ?? 'fff';
 $params['font']      = $params['font']      ?? 'BebasNeue';
 
-// bgImage policy: default-deny for remote URLs.
-// A key must explicitly opt in with allow_remote_bg=true. If bg_domains is
-// also set, the URL host must match an entry (exact or subdomain). The
-// preview pseudo-key always blocks remote bgImage.
+// Remote backgrounds require explicit per-key configuration.
+$remoteBackground = null;
 if (!empty($params['bgImage']) && is_string($params['bgImage'])
         && preg_match('~^https?://~i', $params['bgImage'])) {
-    $allowRemote = (bool)($keyConfig['allow_remote_bg'] ?? false);
-    if (!$allowRemote || $apiKey === '__preview__') {
-        $params['bgImage'] = null; // silently drop for legacy keys
+    if (($keyConfig['allow_remote_bg'] ?? false) !== true || $isPreview) {
+        $params['bgImage'] = null;
+    } elseif (!RemoteBackground::allows($params['bgImage'],
+                is_array($keyConfig['bg_domains'] ?? null) ? $keyConfig['bg_domains'] : [])) {
+        http_response_code(403);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'bgImage requires a valid domain allowlist']);
+        exit;
+    } elseif (!function_exists('curl_init')) {
+        http_response_code(503);
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Remote backgrounds unavailable']);
+        exit;
     } else {
-        $whitelist = $keyConfig['bg_domains'] ?? null;
-        if (is_array($whitelist) && !empty($whitelist)) {
-            $host = parse_url($params['bgImage'], PHP_URL_HOST);
-            $hostLower = is_string($host) ? strtolower($host) : '';
-            $matched = false;
-            foreach ($whitelist as $allowed) {
-                if (!is_string($allowed)) continue;
-                $allowedLower = strtolower(trim($allowed));
-                if ($allowedLower === $hostLower
-                        || str_ends_with($hostLower, '.' . $allowedLower)) {
-                    $matched = true;
-                    break;
-                }
-            }
-            if (!$matched) {
-                http_response_code(403);
-                header('Content-Type: application/json');
-                echo json_encode(['error' => 'bgImage host not in allowlist for this key']);
-                exit;
-            }
-        }
-        // No whitelist set but allow_remote_bg=true: SSRF-protected fetch in CountdownTimer
+        $remoteBackground = new RemoteBackground($keyConfig['bg_domains']);
     }
 }
 
@@ -165,23 +177,53 @@ if (!$rateLimiter->check(RateLimiter::clientIp())) {
 // =========================================================================
 // UID-based evergreen: resolve persistent deadline (one-time write per UID)
 // =========================================================================
-$uid = $_GET['uid'] ?? null;
+$uid = $isPreview ? null : ($_GET['uid'] ?? null);
+$campaign = $isPreview ? null : ($_GET['uidCampaign'] ?? null);
+if (($uid !== null && (!is_string($uid) || strlen($uid) > 1024))
+        || ($campaign !== null && (!is_string($campaign) || strlen($campaign) > 128))) {
+    http_response_code(400);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Invalid UID or uidCampaign']);
+    exit;
+}
+if ($campaign === '') $campaign = null;
 if ($uid !== null && $uid !== '' && !empty($params['evergreen'])) {
-    $uidStore = new UidStore();
-    $evergreenSeconds = CacheManager::parseDurationToSeconds((string)$params['evergreen']);
-    $deadline = $uidStore->getOrCreate($uid, $evergreenSeconds);
-    $params['time'] = date('Y-m-d\TH:i:s', $deadline);
-    unset($params['evergreen']);
+    try {
+        $uidStore = new UidStore('/var/cache/timer-gif/uid', $apiKey, $campaign);
+        $evergreenSeconds = CacheManager::parseDurationToSeconds((string)$params['evergreen']);
+        $deadline = $uidStore->getOrCreate($uid, $evergreenSeconds);
+        $params['time'] = gmdate('Y-m-d\TH:i:s\Z', $deadline);
+        unset($params['evergreen']);
+    } catch (\Throwable $e) {
+        http_response_code(503);
+        header('Content-Type: application/json');
+        header('Retry-After: 1');
+        echo json_encode(['error' => 'UID storage unavailable']);
+        exit;
+    }
 }
 
 // =========================================================================
 // Cache check (BEFORE quota — HIT must not burn generation budget)
 // =========================================================================
 $cache = new CacheManager('/var/cache/timer-gif');
-$cachePath = $cache->computeKey($params);
+$spec = new RenderSpec($params, $renderNow);
+$cachePath = $cache->computeKey($spec);
 
-if ($cache->tryServe($cachePath)) {
+function cacheUnavailable(): never
+{
+    http_response_code(503);
+    header('Retry-After: 1');
+    header('Cache-Control: no-store');
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'Timer cache unavailable, retry shortly']);
     exit;
+}
+
+try {
+    if ($cache->tryServe($cachePath)) exit;
+} catch (Throwable) {
+    cacheUnavailable();
 }
 
 // =========================================================================
@@ -198,38 +240,46 @@ if ($cache->tryServe($cachePath)) {
 // =========================================================================
 $lockHandle = $cache->acquireLock($cachePath);
 if ($lockHandle === null) {
-    http_response_code(503);
-    header('Retry-After: 1');
     header('X-Lock: DEGRADED-FAIL');
-    header('Content-Type: application/json');
-    echo json_encode(['error' => 'singleflight lock unavailable, retry shortly']);
-    exit;
+    cacheUnavailable();
 }
 
-// Pass header in — can't header() after tryServe (readfile already flushed)
-if ($cache->tryServe($cachePath, ['X-Lock' => 'HIT-AFTER-LOCK'])) {
-    $cache->releaseLock($lockHandle);
-    exit;
-}
-
-if (!$auth->checkQuota($apiKey, $keyConfig)) {
-    $cache->releaseLock($lockHandle);
-    ApiKeyAuth::denyQuotaExceeded((int)($keyConfig['limit'] ?? 0));
-}
-
+$generating = false;
 try {
-    $timer = new CountdownTimer();
-    $gifData = $timer->generate($params);
-} catch (\Throwable $e) {
+    $cacheHit = $cache->tryServe($cachePath, ['X-Lock' => 'HIT-AFTER-LOCK']);
+    if (!$cacheHit) {
+        $quotaAvailable = $auth->checkQuota($apiKey, $keyConfig);
+        if ($quotaAvailable) {
+            $generating = true;
+            $gifData = (new CountdownTimer($remoteBackground))->generate($spec);
+            $generating = false;
+            $cache->write($cachePath, $gifData);
+        }
+    }
+} catch (Throwable $e) {
+    $failure = $e;
+} finally {
     $cache->releaseLock($lockHandle);
+}
+
+if (isset($failure)) {
+    if ($failure instanceof RemoteBackgroundUnavailable) {
+        http_response_code(503);
+        header('Retry-After: 1');
+        header('Cache-Control: no-store');
+        header('Content-Type: application/json');
+        echo json_encode(['error' => 'Remote background unavailable']);
+        exit;
+    }
+    if (!$generating) cacheUnavailable();
     http_response_code(500);
     header('Content-Type: application/json');
-    echo json_encode(['error' => 'GIF generation failed', 'detail' => $e->getMessage()]);
+    error_log('GIF generation failed: ' . get_class($failure));
+    echo json_encode(['error' => 'GIF generation failed']);
     exit;
 }
-
-$cache->write($cachePath, $gifData);
-$cache->releaseLock($lockHandle);
+if ($cacheHit) exit;
+if (!$quotaAvailable) ApiKeyAuth::denyQuotaExceeded((int)($keyConfig['limit'] ?? 0));
 
 header('Content-Type: image/gif');
 header('Content-Length: ' . strlen($gifData));
@@ -237,6 +287,3 @@ header('X-Cache: MISS');
 header('X-Lock: ACQUIRED');
 $cache->setCacheHeaders();
 echo $gifData;
-
-// Periodic disk guard (non-blocking)
-CacheManager::cleanupIfNeeded();

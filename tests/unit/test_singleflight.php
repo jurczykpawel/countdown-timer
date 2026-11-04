@@ -63,12 +63,13 @@ test('Concurrent fork: only one of N children gets the lock at a time', function
     rm_rf($base);
 });
 
-test('Lock file is created next to cache path', function () {
+test('Lock file belongs to the stable cache pool', function () {
     $base = tmp_dir('sf-path');
     $cm = new CacheManager($base);
     $path = $cm->computeKey(['evergreen' => '1h', 'seconds' => 30]);
     $fh = $cm->acquireLock($path);
-    assert_true(file_exists($path . '.lock'), 'lock file should appear at path.lock');
+    assert_eq(1, count(glob($base . '/.render-locks/*.lock')));
+    assert_false(file_exists($path . '.lock'));
     $cm->releaseLock($fh);
     rm_rf($base);
 });

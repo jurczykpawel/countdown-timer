@@ -675,6 +675,8 @@ footer {
     <h2>URL parameters</h2>
     <p class="section-desc">All parameters are passed as URL query strings. Presets set defaults that individual parameters can override. Per-key limits in <code class="inline-code">keys.json</code> clamp these values before generation, so a public key can't request a 1200&times;400 timer with a remote background.</p>
 
+    <p class="section-desc">Known parameters must be scalar; invalid shapes or excessive string lengths return 400. Numeric ranges are clamped; unknown styles and invalid colors use defaults. Unexpected render failures return a generic 500. Public preview (_preview=1 or key=__preview__) is capped at 480×200 and 5 frames, ignores backgrounds and UID state, and retains IP limiting. UID deadlines persist after expiry and cleanup. Active GIFs loop their finite recorded frames; finished timers show 00:00:00 with loop count 1. An open email cannot refresh its GIF automatically; client/proxy behavior needs separate checks.</p>
+
     <div style="overflow-x:auto; border: 1px solid var(--border-subtle); border-radius: var(--radius-lg);">
     <table class="api-table">
       <thead>
@@ -686,14 +688,16 @@ footer {
         <tr><td>time</td><td>Absolute target datetime (e.g. 2026-12-25T00:00:00)</td><td>now</td></tr>
         <tr><td>evergreen</td><td>Relative duration (e.g. 2h, 1d 2h 30m, 90m)</td><td>-</td></tr>
         <tr><td>uid</td><td>Unique ID for persistent evergreen deadline</td><td>-</td></tr>
+        <tr><td>uidCampaign</td><td>UID namespace with API key and uid (128 bytes max); empty or omitted = default. Rotating a key creates a new scope; campaign is ignored.</td><td>-</td></tr>
         <tr><td>tz</td><td>Timezone (e.g. Europe/Warsaw)</td><td>UTC</td></tr>
         <tr><td>width</td><td>Image width in pixels (100-1200)</td><td>640</td></tr>
         <tr><td>height</td><td>Image height in pixels (40-400)</td><td>140</td></tr>
-        <tr><td>seconds</td><td>Animation frames / duration (1-120)</td><td>30</td></tr>
+        <tr><td>seconds</td><td>One-second frames (1-120); duration is an alias; delay is ignored</td><td>30</td></tr>
         <tr><td>boxColor</td><td>Background color (hex without #)</td><td>000</td></tr>
         <tr><td>fontColor</td><td>Digit color (hex)</td><td>fff</td></tr>
         <tr><td>font</td><td>Font: BebasNeue, Inter-Bold, Montserrat-Bold</td><td>BebasNeue</td></tr>
-        <tr><td>fontSize</td><td>Digit font size in px (omit for auto)</td><td>auto</td></tr>
+        <tr><td>fontSize</td><td>Upper bound for fitted digit size; 0 = automatic</td><td>0</td></tr>
+        <tr><td>xOffset</td><td>Layout shift from center in px (-width..width); changed from the former absolute start position</td><td>0</td></tr>
         <tr><td>boxStyle</td><td>Box style: rounded, gradient, outline, none</td><td>none</td></tr>
         <tr><td>boxBg</td><td>Box background color (hex)</td><td>2d2d4a</td></tr>
         <tr><td>boxRadius</td><td>Box corner radius in px</td><td>10</td></tr>
@@ -701,7 +705,7 @@ footer {
         <tr><td>separator</td><td>Separator between groups (: or - or empty)</td><td>:</td></tr>
         <tr><td>sepColor</td><td>Separator color (hex)</td><td>fontColor</td></tr>
         <tr><td>labelColor</td><td>Label text color (hex)</td><td>fontColor</td></tr>
-        <tr><td>bgImage</td><td>Background image (URL or local path)</td><td>-</td></tr>
+        <tr><td>bgImage</td><td>Local images/ path, or remote URL with allow_remote_bg=true, nonempty bg_domains and PHP cURL. Prefer HTTPS port 443.</td><td>-</td></tr>
         <tr><td>bgFit</td><td>Background fit: cover, contain, stretch</td><td>cover</td></tr>
         <tr><td>transparent</td><td>Transparent background (1 or true)</td><td>false</td></tr>
       </tbody>
