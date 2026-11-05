@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fix transparency key matching for custom colors whose red and blue channels differ.
+
 - Replace the GIF89a encoder with a new implementation preserving byte-for-byte output.
 
 ## v1.0.0 (2026-04-09)

@@ -1870,7 +1870,7 @@
     },
     {
       "id": "transparent-index-1",
-      "description": "RGB key present at GD palette index 1",
+      "description": "RGB transparency key selects its palette index per frame",
       "frames": [
         "frames/palette16.gif",
         "frames/palette16.gif"
@@ -1887,7 +1887,7 @@
       ],
       "expected": {
         "kind": "output",
-        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "sha256": "369a44c8ffb6eb2fd2f302da29339a5e4f2c6aa555c3ac65cebbad531f15927f",
         "bytes": 243,
         "stdout_base64": "",
         "warnings": []
@@ -1901,28 +1901,28 @@
         ],
         "frame_count": 2,
         "loop": 3,
-        "transparency_index": null,
+        "transparency_index": 1,
         "frames": [
           {
             "duration": 70,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "d6256f441c849d537793da916fe149d2b0ea990de060d171cbc2ced193f8dcb8"
           },
           {
             "duration": 330,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "d6256f441c849d537793da916fe149d2b0ea990de060d171cbc2ced193f8dcb8"
           }
         ],
         "transparency_indices": [
-          null,
-          null
+          1,
+          1
         ]
       }
     },
     {
       "id": "transparent-index-2",
-      "description": "RGB key present at GD palette index 2",
+      "description": "RGB transparency key selects its palette index per frame",
       "frames": [
         "frames/palette16.gif",
         "frames/palette16.gif"
@@ -1939,7 +1939,7 @@
       ],
       "expected": {
         "kind": "output",
-        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "sha256": "7b71ced964e3a0f3237df9ab11c90252177886f600fcdc74760b3da29797209b",
         "bytes": 243,
         "stdout_base64": "",
         "warnings": []
@@ -1953,28 +1953,28 @@
         ],
         "frame_count": 2,
         "loop": 3,
-        "transparency_index": null,
+        "transparency_index": 2,
         "frames": [
           {
             "duration": 70,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "4e852a272a06f7f7fd4ee523e83314cc313ecc623fc777ff944edb0cf644a3c9"
           },
           {
             "duration": 330,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "4e852a272a06f7f7fd4ee523e83314cc313ecc623fc777ff944edb0cf644a3c9"
           }
         ],
         "transparency_indices": [
-          null,
-          null
+          2,
+          2
         ]
       }
     },
     {
       "id": "transparent-index-3",
-      "description": "RGB key present at GD palette index 3",
+      "description": "RGB transparency key selects its palette index per frame",
       "frames": [
         "frames/palette16.gif",
         "frames/palette16.gif"
@@ -1991,7 +1991,7 @@
       ],
       "expected": {
         "kind": "output",
-        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "sha256": "f4530023cd9d07817c92ffb599f2886dffc330abbad5e78955d6328554c9dcf3",
         "bytes": 243,
         "stdout_base64": "",
         "warnings": []
@@ -2005,28 +2005,28 @@
         ],
         "frame_count": 2,
         "loop": 3,
-        "transparency_index": null,
+        "transparency_index": 3,
         "frames": [
           {
             "duration": 70,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "c903ae21a6ab07fbf0d2270a4742044414fafc18588278b08baa9dc21983d5dd"
           },
           {
             "duration": 330,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "c903ae21a6ab07fbf0d2270a4742044414fafc18588278b08baa9dc21983d5dd"
           }
         ],
         "transparency_indices": [
-          null,
-          null
+          3,
+          3
         ]
       }
     },
     {
       "id": "transparent-index-4",
-      "description": "RGB key present at GD palette index 4",
+      "description": "RGB transparency key selects its palette index per frame",
       "frames": [
         "frames/palette16.gif",
         "frames/palette16.gif"
@@ -2043,7 +2043,7 @@
       ],
       "expected": {
         "kind": "output",
-        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "sha256": "7eb34c9ad3e79bc18f45960daca55d9b689aadbafbbb6954517bbedaedd8d0ff",
         "bytes": 243,
         "stdout_base64": "",
         "warnings": []
@@ -2057,28 +2057,28 @@
         ],
         "frame_count": 2,
         "loop": 3,
-        "transparency_index": null,
+        "transparency_index": 4,
         "frames": [
           {
             "duration": 70,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "06665e835647ab2d4e1dfb33fe034fe37745d84086b108c3462c4d8565859dcf"
           },
           {
             "duration": 330,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "06665e835647ab2d4e1dfb33fe034fe37745d84086b108c3462c4d8565859dcf"
           }
         ],
         "transparency_indices": [
-          null,
-          null
+          4,
+          4
         ]
       }
     },
     {
       "id": "transparent-index-6",
-      "description": "RGB key present at GD palette index 6",
+      "description": "RGB transparency key selects its palette index per frame",
       "frames": [
         "frames/palette16.gif",
         "frames/palette16.gif"
@@ -2095,7 +2095,7 @@
       ],
       "expected": {
         "kind": "output",
-        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "sha256": "eb2bd0d6b4ee206f7b5886aed1c97738354d33fa58398f413e66379561b51cc4",
         "bytes": 243,
         "stdout_base64": "",
         "warnings": []
@@ -2109,28 +2109,28 @@
         ],
         "frame_count": 2,
         "loop": 3,
-        "transparency_index": null,
+        "transparency_index": 6,
         "frames": [
           {
             "duration": 70,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "828c4f359736bad02261e124c06f0a0f7a38e5083490f71dd942755f6b0ae418"
           },
           {
             "duration": 330,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "828c4f359736bad02261e124c06f0a0f7a38e5083490f71dd942755f6b0ae418"
           }
         ],
         "transparency_indices": [
-          null,
-          null
+          6,
+          6
         ]
       }
     },
     {
       "id": "transparent-index-15",
-      "description": "RGB key present at GD palette index 15",
+      "description": "RGB transparency key selects its palette index per frame",
       "frames": [
         "frames/palette16.gif",
         "frames/palette16.gif"
@@ -2147,7 +2147,7 @@
       ],
       "expected": {
         "kind": "output",
-        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "sha256": "7e5deb4f55cfa6984ad211995549c50c504408be3d7559cd48b4ef05a4757d5b",
         "bytes": 243,
         "stdout_base64": "",
         "warnings": []
@@ -2161,28 +2161,28 @@
         ],
         "frame_count": 2,
         "loop": 3,
-        "transparency_index": null,
+        "transparency_index": 15,
         "frames": [
           {
             "duration": 70,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "805b8e1f4811d610d02abb8b259119423fe5d93a73ed3442ca4be88ac8e6c380"
           },
           {
             "duration": 330,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "805b8e1f4811d610d02abb8b259119423fe5d93a73ed3442ca4be88ac8e6c380"
           }
         ],
         "transparency_indices": [
-          null,
-          null
+          15,
+          15
         ]
       }
     },
     {
       "id": "transparent-index-five",
-      "description": "RGB key at nonzero palette index, identical palettes",
+      "description": "RGB transparency key selects its palette index per frame",
       "frames": [
         "frames/palette16.gif",
         "frames/palette16.gif"
@@ -2199,7 +2199,7 @@
       ],
       "expected": {
         "kind": "output",
-        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "sha256": "d8c4899b13d90905bd589075541e081266dcf9f92280f841492ef81370983a57",
         "bytes": 243,
         "stdout_base64": "",
         "warnings": []
@@ -2213,28 +2213,28 @@
         ],
         "frame_count": 2,
         "loop": 3,
-        "transparency_index": null,
+        "transparency_index": 5,
         "frames": [
           {
             "duration": 70,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "21e5911648c1cc17edcb90a8fc1c322efa7c46b43a8ff3e84e1aa8acd25bf83d"
           },
           {
             "duration": 330,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "21e5911648c1cc17edcb90a8fc1c322efa7c46b43a8ff3e84e1aa8acd25bf83d"
           }
         ],
         "transparency_indices": [
-          null,
-          null
+          5,
+          5
         ]
       }
     },
     {
       "id": "transparent-different-index",
-      "description": "RGB key appears only in second palette",
+      "description": "RGB transparency key selects its palette index per frame",
       "frames": [
         "frames/palette16-shift.gif",
         "frames/palette16.gif"
@@ -2251,7 +2251,7 @@
       ],
       "expected": {
         "kind": "output",
-        "sha256": "8c203b3f39d3c8400d158396d87c8906c5d2ec05b7caa21f3dd859916ef208cb",
+        "sha256": "085c37b11bf0ea40a8842c58e5e8da54fce37dede7eb9742ccf9e5a19f133fea",
         "bytes": 291,
         "stdout_base64": "",
         "warnings": []
@@ -2275,12 +2275,12 @@
           {
             "duration": 330,
             "disposal": 2,
-            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+            "rgba_sha256": "31f822ea59e35e561ff8e40d845d8544caf4bd722339969ede5670633d5134a1"
           }
         ],
         "transparency_indices": [
           null,
-          null
+          5
         ]
       }
     },

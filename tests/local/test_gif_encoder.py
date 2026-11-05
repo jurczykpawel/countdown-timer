@@ -84,7 +84,80 @@ def decoded_features(data):
         return {'kind': 'decode_error', 'class': type(error).__name__, 'message': re.sub(r'0x[0-9a-fA-F]+', '<address>', str(error))}
 
 
+def isolated_frames(data):
+    """Keep encoded image blocks intact; decode each frame without compositing history."""
+    pos = 13 + (3 * (2 ** ((data[10] & 7) + 1)) if data[10] & 128 else 0)
+    header, gce = data[:pos], b''
+    while data[pos] != 0x3b:
+        start = pos
+        marker = data[pos]
+        pos += 1
+        if marker == 0x21:
+            label = data[pos]
+            pos += 1
+        elif marker == 0x2c:
+            flags = data[pos + 8]
+            pos += 9
+            if flags & 128:
+                pos += 3 * (2 ** ((flags & 7) + 1))
+            pos += 1  # LZW minimum code size
+        else:
+            raise ValueError(f'Unexpected block marker {marker}')
+        while data[pos]:
+            pos += data[pos] + 1
+        pos += 1
+        if marker == 0x21 and label == 0xf9:
+            gce = data[start:pos]
+        elif marker == 0x2c:
+            yield header + gce + data[start:pos] + b'\x3b'
+            gce = b''
+
+
 class EncoderCorpus(unittest.TestCase):
+    def check_palette_key(self, palettes, key, indices):
+        result = subprocess.run([os.environ.get('PHP_BINARY', 'php'),
+            str(REPO / 'tests/local/encoder_palette.php')],
+            input=json.dumps({'palettes': palettes, 'key': key}).encode(),
+            capture_output=True, timeout=20, check=True)
+        data = result.stdout
+        self.assertEqual(indices, transparency_indices(data))
+        with Image.open(io.BytesIO(data)) as gif:
+            self.assertEqual(indices[0], gif.info.get('transparency'))
+            self.assertEqual(len(palettes), gif.n_frames)
+        # Pillow composites later frames onto the disposal background. An opaque
+        # first frame can therefore hide a later frame's transparent pixels.
+        for n, payload in enumerate(isolated_frames(data)):
+            with Image.open(io.BytesIO(payload)) as frame:
+                self.assertEqual(indices[n], frame.info.get('transparency'))
+                rgba = frame.convert('RGBA')
+                palette = palettes[n]
+                for x, rgb in enumerate(palette):
+                    self.assertEqual(0 if rgb == key else 255,
+                                     rgba.getpixel((x, 0))[3], (n, x, key))
+                    if rgb != key:
+                        self.assertEqual(tuple(rgb), rgba.getpixel((x, 0))[:3])
+
+    def test_rgb_key_present(self):
+        for key in ([17, 65, 203], [220, 42, 9], [1, 254, 2]):
+            with self.subTest(key=key):
+                self.check_palette_key([[[0, 0, 0], key], [key, [255, 255, 255]]],
+                                       key, [1, 0])
+
+    def test_rgb_key_absent_reversed_present(self):
+        key = [17, 65, 203]
+        self.check_palette_key([[[203, 65, 17], [0, 0, 0]],
+                                [[255, 255, 255], [203, 65, 17]]], key, [None, None])
+
+    def test_rgb_key_and_reversed_present(self):
+        key = [17, 65, 203]
+        self.check_palette_key([[[203, 65, 17], key, [0, 0, 0]],
+                                [[0, 0, 0], [203, 65, 17], key]], key, [1, 2])
+
+    def test_rgb_key_only_second_frame(self):
+        key = [220, 42, 9]
+        self.check_palette_key([[[0, 0, 0], [255, 255, 255]],
+                                [[9, 42, 220], key]], key, [None, 1])
+
     def test_decoded_corpus(self):
         manifest = json.loads((ROOT / 'manifest.json').read_text())
         for case in manifest['cases']:

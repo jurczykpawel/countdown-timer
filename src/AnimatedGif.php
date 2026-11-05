@@ -28,9 +28,9 @@ class AnimatedGif
         $screenFlags = ord($sourceImages[0][10]);
         $paletteBytes = 3 * (1 << (($screenFlags & 7) + 1));
         $this->globalPalette = substr($sourceImages[0], 13, $paletteBytes);
-        // The byte contract uses BGR matching, although GIF color tables contain RGB.
+        // GIF color tables store each entry in RGB order.
         $this->transparentColor = min($trRed, $trGreen, $trBlue) < 0
-            ? null : chr($trBlue) . chr($trGreen) . chr($trRed);
+            ? null : chr($trRed) . chr($trGreen) . chr($trBlue);
 
         if ($screenFlags & 0x80) {
             $this->animation = 'GIF89a' . substr($sourceImages[0], 6, 7) . $this->globalPalette;
