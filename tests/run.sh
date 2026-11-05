@@ -40,6 +40,7 @@ run_integration() {
 }
 
 run_local() {
+    uv run --no-project --with pillow==12.0.0 python tests/local/test_gif_encoder.py
     uv run --no-project --with pillow==12.0.0 python tests/local/test_http.py "$1"
     uv run --no-project --with pillow==12.0.0 python tests/local/test_gif.py "$1"
     uv run --no-project --with pillow==12.0.0 python tests/local/test_background.py

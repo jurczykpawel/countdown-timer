@@ -1,0 +1,2445 @@
+{
+  "schema_version": 1,
+  "source_revision": "09e31f896298871198882dfc3e52e6b8205e605a",
+  "clock": 1800000000,
+  "cases": [
+    {
+      "id": "preset-dark-boxes-1",
+      "description": "CountdownTimer dark-boxes, fixed clock, 1 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-dark-boxes-1-0.gif"
+      ],
+      "delays": [
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "ec7e24543b1f4700da247cb491b425ce005860fada58b85b3dee480f517df008",
+        "bytes": 7184,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-dark-boxes-1.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          140
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "9b1859fecc1dcc753aff8ff7cc13abc8bf6a102f9ffd4f7ae0ecaae62a5c4bdd"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "preset-dark-boxes-4",
+      "description": "CountdownTimer dark-boxes, fixed clock, 4 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-dark-boxes-4-0.gif",
+        "frames/preset-dark-boxes-4-1.gif",
+        "frames/preset-dark-boxes-4-2.gif",
+        "frames/preset-dark-boxes-4-3.gif"
+      ],
+      "delays": [
+        100,
+        100,
+        100,
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "5b9fb060aa4eddd7edabee2803aff28aed29c83d83a96958b1ebf3fda787d124",
+        "bytes": 28226,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-dark-boxes-4.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          140
+        ],
+        "frame_count": 4,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "9b1859fecc1dcc753aff8ff7cc13abc8bf6a102f9ffd4f7ae0ecaae62a5c4bdd"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "3b92789bb803e088f971b4ae76a6be488d4b33f55c77d3901cf180fc84ee741d"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "229a3c7d5538ff1831eacac272764edf807df38d9dc11c203aff64c870975c96"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "3742d539f3d4a9bb1ce064a6d4255c1790c7687b5993b1d0f63f85e3c07b9e6f"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "preset-gradient-cards-1",
+      "description": "CountdownTimer gradient-cards, fixed clock, 1 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-gradient-cards-1-0.gif"
+      ],
+      "delays": [
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "47b0ef03566f46b63ff60f7f7ea0510e3f18c6ad1f9f37950cf737b925c0668f",
+        "bytes": 5832,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-gradient-cards-1.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          140
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "29b1992584fec0bc4ec91c3f17a22fd93816bbf32ca926c864dff1509025b3ef"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "preset-gradient-cards-4",
+      "description": "CountdownTimer gradient-cards, fixed clock, 4 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-gradient-cards-4-0.gif",
+        "frames/preset-gradient-cards-4-1.gif",
+        "frames/preset-gradient-cards-4-2.gif",
+        "frames/preset-gradient-cards-4-3.gif"
+      ],
+      "delays": [
+        100,
+        100,
+        100,
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "d9d9d81cd0dd5d6bf5f4fe0c2933b137636ddac16be512c0727433a4d3648b93",
+        "bytes": 22985,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-gradient-cards-4.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          140
+        ],
+        "frame_count": 4,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "29b1992584fec0bc4ec91c3f17a22fd93816bbf32ca926c864dff1509025b3ef"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "e015166ce938b42a2ad572591eb1661aebd88870a3e6913e902def08ff7efe82"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "c16d1d4fd7ab3959dd2e1bc6ff18c959fbab33b5449c24742de757d8448f6e55"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "fb97a5a402666b0c84b2c073c2c0c0c3acf2e6c0f3271ae31946226a8a15dea7"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "preset-minimal-light-1",
+      "description": "CountdownTimer minimal-light, fixed clock, 1 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-minimal-light-1-0.gif"
+      ],
+      "delays": [
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "3b60f2f614e2774c3d5d5ea4e5626186324c4a07c7ce1e0c4133fe76c9fad55d",
+        "bytes": 7732,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-minimal-light-1.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          130
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "ba8710b23ec06d4c5c2aeed69037b51f383362c0a79ea6f5993e90e21a4eefc3"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "preset-minimal-light-4",
+      "description": "CountdownTimer minimal-light, fixed clock, 4 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-minimal-light-4-0.gif",
+        "frames/preset-minimal-light-4-1.gif",
+        "frames/preset-minimal-light-4-2.gif",
+        "frames/preset-minimal-light-4-3.gif"
+      ],
+      "delays": [
+        100,
+        100,
+        100,
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "94d3e3be60ee1a69167798addb3413e494d41c65a88e731026d83b3b6daadd32",
+        "bytes": 29318,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-minimal-light-4.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          130
+        ],
+        "frame_count": 4,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "ba8710b23ec06d4c5c2aeed69037b51f383362c0a79ea6f5993e90e21a4eefc3"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "60986ea38ce7451297430a7dce7eda4732e73239ebfdd0f7b3dc48e3d0030e79"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "a736ab1015eadaf1b627c92c0c4e3d0d16a971513f6bf9cef92af0197ab276c4"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "d8e92fea167054d63fd40f27d9154cfa7d57be635979184d118ce481c42dfc29"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "preset-bold-color-1",
+      "description": "CountdownTimer bold-color, fixed clock, 1 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-bold-color-1-0.gif"
+      ],
+      "delays": [
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "ee0780efdd60df29af6018e823c90a220ae5c4cee96cb5a036b077146100c4a5",
+        "bytes": 7080,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-bold-color-1.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          120
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "95b28ce39c76f9bbd84b45e5f38d0ffb78e25677503b383f3fdc029167a01ebc"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "preset-bold-color-4",
+      "description": "CountdownTimer bold-color, fixed clock, 4 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-bold-color-4-0.gif",
+        "frames/preset-bold-color-4-1.gif",
+        "frames/preset-bold-color-4-2.gif",
+        "frames/preset-bold-color-4-3.gif"
+      ],
+      "delays": [
+        100,
+        100,
+        100,
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "b60b14dd21f6435c4c5f4c47f300b99ba020745c35f983929840565cc151926e",
+        "bytes": 27297,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-bold-color-4.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          120
+        ],
+        "frame_count": 4,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "95b28ce39c76f9bbd84b45e5f38d0ffb78e25677503b383f3fdc029167a01ebc"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "903ae1fbec26474893522e7dcab6e3d596e475314b09f4809789649bc2b6cdd6"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "a37b62f8f74d319370e5af1f5b6ca425f46fe6b663f19596a0d319ab739911fc"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "a517732a6912449ee50334e6e42b0061623285e0be8e198bbe0e6129e4e5c786"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "preset-transparent-1",
+      "description": "CountdownTimer transparent, fixed clock, 1 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-transparent-1-0.gif"
+      ],
+      "delays": [
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": [
+        255,
+        0,
+        255
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "8004b57a37ee0f28449b9e4ba5af7f909e921a655ee4af4a46080618182076f4",
+        "bytes": 5244,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-transparent-1.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          120
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": 64,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "d926d835f40084bfe78c812e24f7861d2023c46095f493d7c3c19460260333c3"
+          }
+        ],
+        "transparency_indices": [
+          64
+        ]
+      }
+    },
+    {
+      "id": "preset-transparent-4",
+      "description": "CountdownTimer transparent, fixed clock, 4 frame(s), 24-hour boundary",
+      "frames": [
+        "frames/preset-transparent-4-0.gif",
+        "frames/preset-transparent-4-1.gif",
+        "frames/preset-transparent-4-2.gif",
+        "frames/preset-transparent-4-3.gif"
+      ],
+      "delays": [
+        100,
+        100,
+        100,
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": [
+        255,
+        0,
+        255
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "a392ec734b5f18128c7ad85b7795e8afde7925ea6c748c3e20aa62e718cb1095",
+        "bytes": 20812,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/preset-transparent-4.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          640,
+          120
+        ],
+        "frame_count": 4,
+        "loop": 0,
+        "transparency_index": 64,
+        "frames": [
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "d926d835f40084bfe78c812e24f7861d2023c46095f493d7c3c19460260333c3"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "fab7d4dca6f498a2abd4633a48fe7a492ff40db643cc54056082e1ce8a2e3ebe"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "1c3af619b0289bc5d52a037d80b1e3a40bf7eaa49ab34f588bb486e695804bd4"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "0a1f7a510d44b0766b93f22ae824e854d07dab1822f93e82ca53898e0f606913"
+          }
+        ],
+        "transparency_indices": [
+          64,
+          64,
+          64,
+          64
+        ]
+      }
+    },
+    {
+      "id": "palette-2",
+      "description": "GD palette with 2 allocated colors",
+      "frames": [
+        "frames/palette2.gif"
+      ],
+      "delays": [
+        7
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "bf6f1002587c0ef2b8b82f5556912c2f3c53dd37054960a0d12abe632166cf75",
+        "bytes": 69,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/palette-2.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          9,
+          7
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "d86bb97099e6467a18cf57a24dfef9d7f73f21191bc9f93fb143add0b0d2bd63"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "palette-16",
+      "description": "GD palette with 16 allocated colors",
+      "frames": [
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "8b8d093c98b53d5ff0ea178cf40a79f78bc2619747036190cd40a443aab8de7e",
+        "bytes": 162,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/palette-16.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "palette-64",
+      "description": "GD palette with 64 allocated colors",
+      "frames": [
+        "frames/palette64.gif"
+      ],
+      "delays": [
+        7
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "2d2570df32f79efd2c31d6438c1a05466b530944e899952a238b04a0bbb0a545",
+        "bytes": 380,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/palette-64.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          19,
+          13
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "075b6c22436455ae7c2fb99aafd5142c11129b677180602b40581cb74110678d"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "palette-256",
+      "description": "GD palette with 256 allocated colors",
+      "frames": [
+        "frames/palette256.gif"
+      ],
+      "delays": [
+        7
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "33707e7ac3a7ae5a75f8b8f0407e3522b867057af671d1344355fa8618a841f7",
+        "bytes": 1118,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/palette-256.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          33,
+          17
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "1ecf3f2c1d928948a024679a6d768c3cb5e6bab232297e49ef2c2c4066cbf93b"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "one-pixel",
+      "description": "1x1 screen",
+      "frames": [
+        "frames/one.gif"
+      ],
+      "delays": [
+        0
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "8b277285a00babd2b7ea96dedc6383df31937fa266aec36f7434422062017af8",
+        "bytes": 62,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/one-pixel.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          1,
+          1
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 0,
+            "disposal": 2,
+            "rgba_sha256": "e3820096cb82366b860b8a4e668453a7aaaf423af03bdf289fa308ea03a79332"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "large-screen",
+      "description": "1200x400 screen",
+      "frames": [
+        "frames/large.gif"
+      ],
+      "delays": [
+        65535
+      ],
+      "loops": 65535,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "76335a623963055b67a1e4567eedc2804896e6955ee248429ba29df3a6ab8a22",
+        "bytes": 86747,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/large-screen.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          1200,
+          400
+        ],
+        "frame_count": 1,
+        "loop": 65535,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 655350,
+            "disposal": 2,
+            "rgba_sha256": "0f0fd08c0bc442f82875ad4a04d2c6a26f3ee8aa57c1724816353b7b61264fad"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "two-frames",
+      "description": "Equal palette and dimensions",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        1,
+        33
+      ],
+      "loops": 1,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "e23b67b94958dc1104ab9b5e9a00fe194b8b3ddb87727895ab5666f8c40ce236",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/two-frames.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 1,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 10,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "many-frames",
+      "description": "Six frames with changing palette and delays",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif",
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif",
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        0,
+        1,
+        7,
+        33,
+        100,
+        65535
+      ],
+      "loops": 3,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "b7dae116f3cdacc38d7d2e2ef2682a26e4126dfc4fcb68c644fc9eb848be3cbd",
+        "bytes": 711,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/many-frames.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 6,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 0,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 10,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          },
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          },
+          {
+            "duration": 1000,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 655350,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "different-palettes",
+      "description": "Same dimensions, different palettes",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "4b046340ddbc0aad956585c19dffdee46b42b59e8c018eee2aae456855ba20b1",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/different-palettes.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "different-sizes",
+      "description": "Different dimensions and palette lengths",
+      "frames": [
+        "frames/palette2.gif",
+        "frames/palette256.gif",
+        "frames/one.gif",
+        "frames/large.gif"
+      ],
+      "delays": [
+        0,
+        1,
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "3eca386028070f7065d7894bd31667a9448e07d992a8c79668fc5de4a7350e81",
+        "bytes": 87891,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/different-sizes.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          9,
+          7
+        ],
+        "frame_count": 4,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 0,
+            "disposal": 2,
+            "rgba_sha256": "d86bb97099e6467a18cf57a24dfef9d7f73f21191bc9f93fb143add0b0d2bd63"
+          },
+          {
+            "duration": 10,
+            "disposal": 2,
+            "rgba_sha256": "1ecf3f2c1d928948a024679a6d768c3cb5e6bab232297e49ef2c2c4066cbf93b"
+          },
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "6c0c302f7584ee39cde58d75c9d41843f25e4bb66075272d6dfc18152ed79ea2"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "0f0fd08c0bc442f82875ad4a04d2c6a26f3ee8aa57c1724816353b7b61264fad"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null,
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "interlaced",
+      "description": "Interlaced first and second images",
+      "frames": [
+        "frames/interlaced.gif",
+        "frames/interlaced.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "9e99786a1f330de11a476f3e4bc9ef9706aca5a2c786b664cfc0af22eca2465a",
+        "bytes": 613,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/interlaced.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          19
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "d515b0f478c1197febf6c86bae4aed1ee8fe1bb5d8bfefffe229dc9509a51f8a"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "d515b0f478c1197febf6c86bae4aed1ee8fe1bb5d8bfefffe229dc9509a51f8a"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-present",
+      "description": "RGB key present in palette",
+      "frames": [
+        "frames/transparent.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": [
+        0,
+        0,
+        0
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "42b13c0261641269250af2f8983d47b545ef136e3eb07baf929e2721b6b45a28",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-present.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": 0,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "2b019648ea44164f43b8a72977ecc1dc129c2c342c6b83c5a1944f2fb1b1bb0d"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          0,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-absent",
+      "description": "RGB key absent in palette",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": [
+        1,
+        2,
+        3
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "4b046340ddbc0aad956585c19dffdee46b42b59e8c018eee2aae456855ba20b1",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-absent.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-unspecified",
+      "description": "Input transparency with no RGB argument",
+      "frames": [
+        "frames/transparent.gif",
+        "frames/transparent.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "bc8ec0e631146bb6f9c35a32694460c3858878a0f8324fd08dec08e207d758c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-unspecified.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "partial-rgb-0",
+      "description": "Partially negative RGB argument",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": [
+        0,
+        -1,
+        -1
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "4b046340ddbc0aad956585c19dffdee46b42b59e8c018eee2aae456855ba20b1",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/partial-rgb-0.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "partial-rgb-1",
+      "description": "Partially negative RGB argument",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": [
+        -1,
+        0,
+        0
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "4b046340ddbc0aad956585c19dffdee46b42b59e8c018eee2aae456855ba20b1",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/partial-rgb-1.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "partial-rgb-2",
+      "description": "Partially negative RGB argument",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": [
+        0,
+        0,
+        -1
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "4b046340ddbc0aad956585c19dffdee46b42b59e8c018eee2aae456855ba20b1",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/partial-rgb-2.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "partial-rgb-3",
+      "description": "Partially negative RGB argument",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": [
+        -1,
+        -1,
+        0
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "4b046340ddbc0aad956585c19dffdee46b42b59e8c018eee2aae456855ba20b1",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/partial-rgb-3.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "empty",
+      "description": "Empty image and delay lists",
+      "frames": [],
+      "delays": [],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "TypeError",
+        "message": "ord(): Argument #1 ($character) must be of type string, null given",
+        "stdout_base64": "",
+        "warnings": [
+          {
+            "type": 2,
+            "message": "Undefined array key 0"
+          },
+          {
+            "type": 2,
+            "message": "Trying to access array offset on null"
+          }
+        ]
+      }
+    },
+    {
+      "id": "missing-delays",
+      "description": "Fewer delays than images",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "RuntimeException",
+        "message": "Frame count and delay count must match.",
+        "stdout_base64": "",
+        "warnings": []
+      }
+    },
+    {
+      "id": "extra-delays",
+      "description": "More delays than images",
+      "frames": [
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33,
+        100
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "RuntimeException",
+        "message": "Frame count and delay count must match.",
+        "stdout_base64": "",
+        "warnings": []
+      }
+    },
+    {
+      "id": "no-delays",
+      "description": "Empty delay list",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "RuntimeException",
+        "message": "Frame count and delay count must match.",
+        "stdout_base64": "",
+        "warnings": []
+      }
+    },
+    {
+      "id": "negative-delay",
+      "description": "Negative delay",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        -1,
+        -32769
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "a9d258075e7203ace37eb5a311413c1f280fc9ff03ad63ae18251a505e7434ea",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/negative-delay.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 0,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 0,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "fractional-delay",
+      "description": "Fractional delay",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        1.5,
+        33.75
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "TypeError",
+        "message": "AnimatedGif::addFrame(): Argument #2 ($delay) must be of type int, float given, called in <encoder>",
+        "stdout_base64": "",
+        "warnings": []
+      }
+    },
+    {
+      "id": "large-delay",
+      "description": "Delay larger than 16 bits",
+      "frames": [
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        65536
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "f9893e32f9febf50d5108a423be9ac8e200c7c412afc70560eb097bee26a2932",
+        "bytes": 162,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/large-delay.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 0,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null
+        ]
+      }
+    },
+    {
+      "id": "negative-loop",
+      "description": "Negative loop count",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": -1,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "4b046340ddbc0aad956585c19dffdee46b42b59e8c018eee2aae456855ba20b1",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/negative-loop.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "large-loop",
+      "description": "Loop count larger than 16 bits",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 65536,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "4b046340ddbc0aad956585c19dffdee46b42b59e8c018eee2aae456855ba20b1",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/large-loop.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "not-gif",
+      "description": "Non-GIF first image",
+      "frames": [
+        "frames/not-gif.gif"
+      ],
+      "delays": [
+        7
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "RuntimeException",
+        "message": "Frame 0 is not a valid GIF.",
+        "stdout_base64": "",
+        "warnings": []
+      }
+    },
+    {
+      "id": "not-gif-later",
+      "description": "Non-GIF later image",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/not-gif.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "RuntimeException",
+        "message": "Frame 1 is not a valid GIF.",
+        "stdout_base64": "",
+        "warnings": []
+      }
+    },
+    {
+      "id": "gif87a",
+      "description": "GIF87a header",
+      "frames": [
+        "frames/gif87a.gif",
+        "frames/gif87a.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "bc8ec0e631146bb6f9c35a32694460c3858878a0f8324fd08dec08e207d758c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/gif87a.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "truncated",
+      "description": "Header-only GIF",
+      "frames": [
+        "frames/truncated.gif"
+      ],
+      "delays": [
+        7
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "22a2cdb9ea6a1b3fc4877775690d22d0ec5d3ac826cd1e7587a8b117527cc464",
+        "bytes": 41,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/truncated.gif",
+      "decoded": {
+        "kind": "decode_error",
+        "class": "UnidentifiedImageError",
+        "message": "cannot identify image file <_io.BytesIO object at <address>>"
+      }
+    },
+    {
+      "id": "loop-max-many",
+      "description": "Maximum 16-bit loop count with two frames",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16-shift.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 65535,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "80db6c2671cce3dec78a524a154ceb529be99b4376cec4cb065e4d8e61394420",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/loop-max-many.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 65535,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-index-1",
+      "description": "RGB key present at GD palette index 1",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 3,
+      "transparent_rgb": [
+        47,
+        73,
+        113
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-index-1.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-index-2",
+      "description": "RGB key present at GD palette index 2",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 3,
+      "transparent_rgb": [
+        94,
+        146,
+        226
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-index-2.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-index-3",
+      "description": "RGB key present at GD palette index 3",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 3,
+      "transparent_rgb": [
+        141,
+        219,
+        83
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-index-3.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-index-4",
+      "description": "RGB key present at GD palette index 4",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 3,
+      "transparent_rgb": [
+        188,
+        36,
+        196
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-index-4.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-index-6",
+      "description": "RGB key present at GD palette index 6",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 3,
+      "transparent_rgb": [
+        26,
+        182,
+        166
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-index-6.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-index-15",
+      "description": "RGB key present at GD palette index 15",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 3,
+      "transparent_rgb": [
+        193,
+        71,
+        159
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-index-15.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-index-five",
+      "description": "RGB key at nonzero palette index, identical palettes",
+      "frames": [
+        "frames/palette16.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 3,
+      "transparent_rgb": [
+        235,
+        109,
+        53
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "242d513c668aebf36333755e197a217591cf109a6555fd60c1b67c16549623c5",
+        "bytes": 243,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-index-five.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "transparent-different-index",
+      "description": "RGB key appears only in second palette",
+      "frames": [
+        "frames/palette16-shift.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 3,
+      "transparent_rgb": [
+        235,
+        109,
+        53
+      ],
+      "expected": {
+        "kind": "output",
+        "sha256": "8c203b3f39d3c8400d158396d87c8906c5d2ec05b7caa21f3dd859916ef208cb",
+        "bytes": 291,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/transparent-different-index.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 2,
+        "loop": 3,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "65a2a1e6bfdcbe5423d99fda5dd2dcef4858feae57c0b3aa0e170569013a82c6"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "same-size-different-depth",
+      "description": "Same screen, different palette lengths",
+      "frames": [
+        "frames/palette2.gif",
+        "frames/small16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "b8744c8304d9d6b441e129199b2cce9593acdc733d0a0cca9d60399e2e00fef3",
+        "bytes": 167,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/same-size-different-depth.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          9,
+          7
+        ],
+        "frame_count": 2,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 70,
+            "disposal": 2,
+            "rgba_sha256": "d86bb97099e6467a18cf57a24dfef9d7f73f21191bc9f93fb143add0b0d2bd63"
+          },
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "3e53d438a222782ec147af92d66fdcd791383510fa08a0ffcee3c1623e4741b4"
+          }
+        ],
+        "transparency_indices": [
+          null,
+          null
+        ]
+      }
+    },
+    {
+      "id": "comment-extension",
+      "description": "Comment block before image",
+      "frames": [
+        "frames/comment.gif",
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        7,
+        33
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "b917e79d4b9dbc4c993cd1e5b74d3972e8e2c84aee3adc7165d86c4fbf61f921",
+        "bytes": 242,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/comment-extension.gif",
+      "decoded": {
+        "kind": "decoded",
+        "screen": [
+          17,
+          11
+        ],
+        "frame_count": 1,
+        "loop": 0,
+        "transparency_index": null,
+        "frames": [
+          {
+            "duration": 330,
+            "disposal": 2,
+            "rgba_sha256": "ac4be2797c18e76e40bd360fe994f36b7279d36c1d62f779258dde18df491efe"
+          }
+        ],
+        "transparency_indices": null,
+        "transparency_parse_error": "Unexpected block marker 0"
+      }
+    },
+    {
+      "id": "local-palette",
+      "description": "Input has local palette and no global palette",
+      "frames": [
+        "frames/local-palette.gif"
+      ],
+      "delays": [
+        7
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "output",
+        "sha256": "cf2f6ba10d24e412598e44a7712df9ad864d2f01ca604cc4c7f2da7d91dd392a",
+        "bytes": 82,
+        "stdout_base64": "",
+        "warnings": []
+      },
+      "expected_file": "expected/local-palette.gif",
+      "decoded": {
+        "kind": "decode_error",
+        "class": "UnidentifiedImageError",
+        "message": "cannot identify image file <_io.BytesIO object at <address>>"
+      }
+    },
+    {
+      "id": "integer-string-delay",
+      "description": "Numeric string delay",
+      "frames": [
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        "7"
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "TypeError",
+        "message": "AnimatedGif::addFrame(): Argument #2 ($delay) must be of type int, string given, called in <encoder>",
+        "stdout_base64": "",
+        "warnings": []
+      }
+    },
+    {
+      "id": "null-delay",
+      "description": "Null delay",
+      "frames": [
+        "frames/palette16.gif"
+      ],
+      "delays": [
+        null
+      ],
+      "loops": 0,
+      "transparent_rgb": null,
+      "expected": {
+        "kind": "exception",
+        "class": "TypeError",
+        "message": "AnimatedGif::addFrame(): Argument #2 ($delay) must be of type int, null given, called in <encoder>",
+        "stdout_base64": "",
+        "warnings": []
+      }
+    }
+  ],
+  "decoder": "Pillow 12.0.0",
+  "error_normalization": {
+    "php_call_site": ", called in <encoder>",
+    "python_object_address": "<address>"
+  }
+}
