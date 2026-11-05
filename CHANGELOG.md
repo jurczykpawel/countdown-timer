@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a reusable Cloudflare cache-rule JSON with dashboard/API setup, host-only purge and rollback instructions.
+- Add a configurable maintenance monitor, private env template, dry-run checks and a deployment-from-scratch path.
 - Align the maintenance cron template with job-error logging and document monitor rotation, deduplication and independent notification channels.
 - Document the verified Cloudflare cache reference configuration, TTLs, query keys, key revocation and rollback checks.
 - Update deployment and contributor guidance for the manual same-SHA PHP 8.4/8.5 test gate, coordinated maintenance and FPM reload.

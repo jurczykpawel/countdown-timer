@@ -4,6 +4,12 @@ This is an operator procedure, not an automatic deployment script. Adapt generic
 paths, service names and the PHP binary to the installation. Production, CDN
 rules and mail clients require checks on their actual environment.
 
+For a new installation, follow README [Deploy from scratch](../README.md#deploy-from-scratch):
+server/routing, coordinated code and [cleanup cron](timer-gif-cache.cron),
+[private monitor installation](monitor/README.md), optional
+[Cloudflare JSON and setup](cloudflare/README.md), then the verification below.
+The workflow replaces code only; monitor/env/rotation and CDN setup are operator steps.
+
 ## Prepare
 
 1. Record the running SHA and intended tested SHA; back up the existing cron,
@@ -59,7 +65,8 @@ The workflow does not assume a service name or reload privilege.
    final echo can return zero: a wrapper's shell status alone does not prove
    cleanup success. Check the log and the underlying command's status.
    Successful cache/rate-limit/counter jobs are silent; UID cleanup prints JSON.
-   Configure the installation's monitor and rotation outside this repository:
+   Install the [monitor and private env template](monitor/README.md), and configure
+   rotation outside the repository:
    retain log inode/read offset atomically, read only new error markers and
    reset the offset on inode change or truncation. The verified rotation mode
    is `copytruncate`; read the active log, not rotated archives, and ignore stale
@@ -140,6 +147,8 @@ The workflow does not assume a service name or reload privilege.
   to reach the origin and verify 429 and its repeat never become CDN HITs.
 - Verify actual CDN rules per installation against the recommended,
   deployment-verified [Cloudflare reference configuration](../README.md#cloudflare-reference-configuration).
+  Use the [JSON payload and dashboard/API procedure](cloudflare/README.md),
+  which appends only the timer rule and includes host-only purge and rollback.
   Scope to the timer host's GIF entry routes with timer parameters; exclude
   landing and other routes, respect origin Edge/Browser TTL, set 400–599
   no-store and keep the full unsorted query key. Active TTL is at most effective

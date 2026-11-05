@@ -229,6 +229,8 @@ response headers such as `CF-Cache-Status` and `Age`.
 The following configuration has been verified on a deployment and is the
 recommended starting point. Verify the actual CDN rules and query handling
 independently for every installation; the repository does not install them.
+Use the ready-to-edit [cache rule JSON](ops/cloudflare/cache-rule.json) and
+[dashboard/API setup, verification and rollback guide](ops/cloudflare/README.md).
 
 - Scope the cache rule to the timer hostname, GET/HEAD, paths `/` and
   `/index.php`, and a query containing `time`, `evergreen`, `relative` or
@@ -280,12 +282,12 @@ All GIF generation requires an API key (`?key=YOUR_KEY`). Keys are stored in `ke
 
 ```json
 {
-    "tk_master_YOUR_SECRET": {
+    "REPLACE_WITH_MASTER_KEY": {
         "name": "Master (internal)",
         "limit": 0,
         "active": true
     },
-    "tk_newsletter": {
+    "REPLACE_WITH_NEWSLETTER_KEY": {
         "name": "Newsletter blast",
         "limit": 5000,
         "active": true,
@@ -293,7 +295,7 @@ All GIF generation requires an API key (`?key=YOUR_KEY`). Keys are stored in `ke
         "max_height": 200,
         "max_seconds": 30
     },
-    "tk_landing_page": {
+    "REPLACE_WITH_LANDING_KEY": {
         "name": "Brand landing page",
         "limit": 50000,
         "active": true,
@@ -418,9 +420,23 @@ can consume a generation: quota, UID storage and cache are separate operations.
 
 ## Operations
 
+### Deploy from scratch
+
+1. Install PHP-FPM and Caddy using [Manual install](#manual-install); protect
+   private files with the route allowlist and verify the tested release SHA.
+2. Follow [coordinated rollout](ops/ROLLOUT.md) to install code and the
+   [cleanup cron](ops/timer-gif-cache.cron), then reload FPM before reopening traffic.
+3. Install the [maintenance monitor](ops/monitor/README.md), private env and log
+   rotation; set capacity thresholds and test independent alarm receipt.
+4. For a proxied hostname, apply the [Cloudflare cache rule](ops/cloudflare/README.md).
+5. Complete [HTTP/GIF, UID, cron and CDN checks](ops/ROLLOUT.md#verify-after-deployment),
+   including cache-key separation and uncached errors. Test mail clients separately.
+
 ### Maintenance monitoring
 
-Monitoring is installation configuration maintained outside this repository.
+Install the [monitor script and env template](ops/monitor/README.md) as private
+installation configuration outside the repository. The template generalizes the
+verified monitor; its paths, thresholds and notification endpoints need local setup.
 Connect nonzero cron exits, UID file counts, inode/disk utilization, growing
 `invalid` counts and repeated `deferred_v2` to recorded alert thresholds.
 The verified setup runs the monitor hourly, saves its log inode/read offset

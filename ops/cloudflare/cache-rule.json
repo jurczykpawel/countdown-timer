@@ -1,0 +1,27 @@
+{
+  "action": "set_cache_settings",
+  "action_parameters": {
+    "browser_ttl": {
+      "mode": "respect_origin"
+    },
+    "cache": true,
+    "cache_key": {
+      "ignore_query_strings_order": false
+    },
+    "edge_ttl": {
+      "mode": "respect_origin",
+      "status_code_ttl": [
+        {
+          "status_code_range": {
+            "from": 400,
+            "to": 599
+          },
+          "value": -1
+        }
+      ]
+    }
+  },
+  "description": "Countdown GIF: origin TTL, full query, no cached errors [timer.example.com]",
+  "enabled": true,
+  "expression": "(http.host eq \"timer.example.com\" and http.request.method in {\"GET\" \"HEAD\"} and http.request.uri.path in {\"/\" \"/index.php\"} and http.request.uri.query ne \"\" and (any(http.request.uri.args.names[*] in {\"time\" \"evergreen\" \"relative\" \"preset\"})))"
+}
