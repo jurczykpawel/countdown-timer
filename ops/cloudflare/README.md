@@ -15,7 +15,7 @@ Query String Sort setting. A custom cache key that excludes parameters is unsafe
    `expression` value with your hostname substituted. This selects only GET/HEAD,
    `/` or `/index.php`, and at least one of `time`, `evergreen`, `relative`, `preset`.
 3. Set **Cache eligibility: Eligible for cache** (`cache: true`).
-4. **Edge TTL: Use cache-control header if present, bypass cache if not**
+4. **Edge TTL: Use cache-control header if present, use default Cloudflare caching behavior if not**
    (`respect_origin`). Add a status-code TTL for range **400–599: No store**
    (`value: -1`, not zero/no-cache). Do not set a fixed successful-response TTL.
 5. **Browser TTL: Respect existing headers** (`respect_origin`).
