@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Align the maintenance cron template with job-error logging and document monitor rotation, deduplication and independent notification channels.
+- Document the verified Cloudflare cache reference configuration, TTLs, query keys, key revocation and rollback checks.
+- Update deployment and contributor guidance for the manual same-SHA PHP 8.4/8.5 test gate, coordinated maintenance and FPM reload.
+
 - Fix transparency key matching for custom colors whose red and blue channels differ.
 
 - Replace the GIF89a encoder with a new implementation preserving byte-for-byte output.

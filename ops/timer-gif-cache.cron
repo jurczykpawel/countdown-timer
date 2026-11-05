@@ -3,10 +3,10 @@
 # Install together with the new code while traffic and maintenance are stopped.
 SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-*/15 * * * * www-data /usr/bin/php8.4 -r "require '/var/www/timer/src/CacheManager.php'; CacheManager::cleanup('/var/cache/timer-gif', 86400, 3600);"
-*/5 * * * * www-data find /var/cache/timer-gif/ratelimit -type f -mmin +10 -delete
-0 3 * * * www-data /usr/bin/php8.4 -r "require '/var/www/timer/src/ApiKeyAuth.php'; ApiKeyAuth::cleanupCounters();"
-30 3 * * * www-data /usr/bin/php8.4 -r "require '/var/www/timer/src/UidStore.php'; echo json_encode(UidStore::cleanup('/var/cache/timer-gif/uid', 34560000)), PHP_EOL;"
+*/15 * * * * www-data /usr/bin/php8.4 -r "require '/var/www/timer/src/CacheManager.php'; CacheManager::cleanup('/var/cache/timer-gif', 86400, 3600);" >> /var/log/timer-gif-cleanup.log 2>&1 || { rc=$?; echo "timer-cron job=cache-cleanup exit=$rc at $(date -u)"; } >> /var/log/timer-gif-cleanup.log 2>&1
+*/5 * * * * www-data find /var/cache/timer-gif/ratelimit -type f -mmin +10 -delete >> /var/log/timer-gif-cleanup.log 2>&1 || { rc=$?; echo "timer-cron job=ratelimit exit=$rc at $(date -u)"; } >> /var/log/timer-gif-cleanup.log 2>&1
+0 3 * * * www-data /usr/bin/php8.4 -r "require '/var/www/timer/src/ApiKeyAuth.php'; ApiKeyAuth::cleanupCounters();" >> /var/log/timer-gif-cleanup.log 2>&1 || { rc=$?; echo "timer-cron job=counters exit=$rc at $(date -u)"; } >> /var/log/timer-gif-cleanup.log 2>&1
+30 3 * * * www-data /usr/bin/php8.4 -r "require '/var/www/timer/src/UidStore.php'; echo json_encode(UidStore::cleanup('/var/cache/timer-gif/uid', 34560000)), PHP_EOL;" >> /var/log/timer-gif-cleanup.log 2>&1 || { rc=$?; echo "timer-cron job=uid-cleanup exit=$rc at $(date -u)"; } >> /var/log/timer-gif-cleanup.log 2>&1
 # No empty-directory deletion or online *.gif.lock deletion.
 # UID locks and render stripe inodes must survive maintenance.
 # Keep automatic git pull outside this file and disabled during rollout/rollback.

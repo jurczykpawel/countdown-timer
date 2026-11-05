@@ -16,9 +16,9 @@ rules and mail clients require checks on their actual environment.
    CLI concurrency tests, not by the production request path. Verify CLI with
    `php8.4 -v`, `php8.4 -m` and `php8.4 -r 'var_export(gd_info());'`;
    verify FPM separately through an isolated, nonpublic fixture and remove it.
-3. Find **all** deploy paths. If an existing cron runs `git pull` every five
-   minutes, disable it **before merging to main**, publishing the release or
-   moving its branch. Complete this step before merging.
+3. Find **all** deploy paths. Keep automatic `git pull` disabled. If migrating
+   an installation that still has a pull job, disable it **before merging to
+   main**, publishing the release or moving its branch.
    Disable competing Actions/manual deployments for the maintenance window.
    A pull does not provide the Actions same-SHA gate or reset OPcache.
 4. Use the README Caddy route allowlist: `/` and `/index.php` to PHP-FPM,
@@ -30,10 +30,11 @@ rules and mail clients require checks on their actual environment.
    If open_basedir/chroot is configured, include the private directory explicitly.
 
 Merging to main does not trigger an **Actions** deployment: that deployment is
-manual only (`workflow_dispatch` on main). On a server with an enabled cron
-`git pull`, merging **does deploy code on the next pull**, until Prepare step 3
-has disabled that path. Disable it before merging. Run the Actions deployment in the stopped window below, together
-with the cron replacement. After an Actions deployment, the operator must reload
+manual only (`workflow_dispatch` on main). The deploy workflow calls the reusable
+unit/local/regressions test workflow on PHP 8.4 and 8.5 and waits for success.
+It deploys that run's exact SHA and rejects a stale run if main has advanced.
+Run it in the stopped window below, together with the cron replacement.
+After an Actions deployment, the operator must reload
 the installation’s FPM service as required in step 5 before reopening traffic.
 The workflow does not assume a service name or reload privilege.
 
@@ -51,6 +52,24 @@ The workflow does not assume a service name or reload privilege.
    The new CLI cleans `v2/{ab,ev,expired}` and legacy GIFs every 15 minutes,
    retains GIFs for 86400 seconds and abandoned temporary files for 3600 seconds.
    There is no hard size ceiling; monitor bytes, inode count and job errors.
+   Prepare each cleanup command's stdout/stderr log before enabling cron,
+   with ownership/modes that allow the scheduled user to append. Capture output
+   and record nonzero command exits with the
+   job name and UTC timestamp as in the cron template. The failure handler's
+   final echo can return zero: a wrapper's shell status alone does not prove
+   cleanup success. Check the log and the underlying command's status.
+   Successful cache/rate-limit/counter jobs are silent; UID cleanup prints JSON.
+   Configure the installation's monitor and rotation outside this repository:
+   retain log inode/read offset atomically, read only new error markers and
+   reset the offset on inode change or truncation. The verified rotation mode
+   is `copytruncate`; read the active log, not rotated archives, and ignore stale
+   dated markers. This deduplicates positions, not message text: copying a fresh
+   marker or resetting state can alert again. Use independent notification
+   channels with separate timeouts/error handling; failure of either channel
+   must not prevent the other. Keep credentials outside the served tree and
+   logs. Test delivery, repeated reads, truncation and channel failure.
+   Run manual cron checks from the scheduled user's home or an accessible
+   directory such as /; a root-only working directory can make find fail.
    Rate-limit files still need the narrow 10-minute cleanup; API-key counters
    still use `cleanupCounters()` for records older than seven days. The daily
    `UidStore::cleanup('/var/cache/timer-gif/uid', 34560000)` removes valid v2 and
@@ -109,13 +128,30 @@ The workflow does not assume a service name or reload privilege.
   installation's monitoring, test the alarm and record who receives it.
   Retention follows deadline age, so future/young records can still grow; this
   is not a hard file-count limit. Monitor bytes as well.
+  The verified installation runs its monitor hourly; set the interval and
+  stale-marker window for the installation. Test threshold and job-error alarms,
+  repeat the read to check deduplication, rotate with copytruncate and verify a
+  new error still alerts. Record independent delivery results for all channels;
+  a successful HTTP publish alone does not prove receipt on a recipient's device.
 - From one dedicated test client, sample the 30/min origin limit and 429 with
-  Retry-After, including an otherwise cached URL. Coordinate this test to avoid
-  consuming the allowance of shared users. Cache HITs still pass the IP limiter.
-- Verify actual CDN rules and query cache keys include authorization and all
-  effective timer parameters. Record `CF-Cache-Status` and `Age` on repeated
-  requests, and verify missing/invalid keys cannot receive another key's cached
-  response. `s-maxage` alone does not enable caching. If no CDN is present,
+  Retry-After, including an otherwise filesystem-cached URL. Coordinate this
+  test to avoid consuming shared users' allowance. Filesystem HITs still pass
+  the limiter; CDN HITs skip the origin. Through a CDN, use fresh query variants
+  to reach the origin and verify 429 and its repeat never become CDN HITs.
+- Verify actual CDN rules per installation against the recommended,
+  deployment-verified [Cloudflare reference configuration](../README.md#cloudflare-reference-configuration).
+  Scope to the timer host's GIF entry routes with timer parameters; exclude
+  landing and other routes, respect origin Edge/Browser TTL, set 400–599
+  no-store and keep the full unsorted query key. Active TTL is at most effective
+  `seconds` (up to 120; active preview up to 5), capped by bucket/deadline;
+  finished responses, including finished previews, have 86400 s immutable.
+  Record `CF-Cache-Status`, `Age`, bytes and ETag for MISS/HIT and after expiry.
+  Verify distinct queries/UID campaigns with distinguishable images and their
+  own HITs; after an authorized HIT, missing/invalid keys must return 403 without
+  HIT. Check malformed input and other errors never HIT. CDN HITs skip
+  authentication, the limiter and generation accounting; those counters do not
+  measure views. Disabling a key requires a timer-host purge; client copies
+  remain. `s-maxage` alone does not enable caching. If no CDN is present,
   record this check as not applicable. Never record real query keys in evidence.
 - A GIF contains finite recorded frames; an open email cannot request fresh
   values automatically. Test the target mail clients and proxies separately;
@@ -152,6 +188,12 @@ five-minute pull that can overwrite the rollback.
 5. Validate routing/FPM, reload FPM to replace OPcache, wait for old children to
    exit and rerun the HTTP, UID and maintenance checks before reopening traffic.
    Preserve private-key placement and route allowlisting through rollback.
+
+For a CDN-only rollback, remove only the timer cache rule and purge only the
+timer hostname. Preserve all other hosts' rules. Verify repeated GIF requests
+are `DYNAMIC` without `Age` and invalid keys still return 403 without HIT. If
+purge fails after removing the rule, complete that purge separately. Client and
+image-proxy copies remain; code or rule rollback cannot remove them.
 
 Installer updates are a separate change: apply and test the corresponding
 StackPilot installer patch in its own release process. Re-running an old

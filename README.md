@@ -224,6 +224,48 @@ prove that a CDN caches this endpoint or includes the correct query parameters
 in its cache key. Configure and verify CDN behavior on your deployment using
 response headers such as `CF-Cache-Status` and `Age`.
 
+### Cloudflare reference configuration
+
+The following configuration has been verified on a deployment and is the
+recommended starting point. Verify the actual CDN rules and query handling
+independently for every installation; the repository does not install them.
+
+- Scope the cache rule to the timer hostname, GET/HEAD, paths `/` and
+  `/index.php`, and a query containing `time`, `evergreen`, `relative` or
+  `preset`. Landing requests and other paths stay outside this rule.
+- Make matching GIF responses eligible for caching. Set both Edge TTL and
+  Browser TTL to **respect origin**. Active freshness is the smaller of the
+  remaining bucket and time to deadline, at most the effective `seconds`
+  (default 30, maximum 120 subject to the key's limit; active preview at most 5).
+  Finished timers, including finished previews, use **86400 seconds, immutable**.
+- Set status-code TTL for **400–599 to no-store** (Cloudflare value `-1`).
+  Errors must never become cached GIF responses.
+- Keep the **full query string** in the cache key, including `key`, `uid`,
+  `uidCampaign`, deadline, timezone and appearance parameters. Do not ignore
+  parameters or enable query-string sorting.
+
+A CDN HIT makes no origin request, so it skips origin authentication, the IP
+limiter and generation accounting. These counters do not measure image views.
+Disabling or rotating an API key does not invalidate a cached response: **purge
+the timer hostname when revoking a key**. Finished GIFs otherwise remain fresh
+for up to 24 hours; purging the CDN cannot remove copies held by clients or
+image proxies.
+
+Verify repeated requests give MISS then HIT with `Age` within TTL. For a fixed
+active absolute deadline, verify bytes/ETag change after TTL expiry. Use different deadlines,
+UIDs and campaigns that produce distinguishable images, and check each URL's
+own repeat. After warming an authorized URL, remove or change its key and
+confirm 403 without HIT. Check malformed input (400), missing paths (404) and
+origin rate-limit errors (429) are never HITs; use fresh query variants to reach
+the origin for the rate-limit check. Landing responses must stay outside the
+GIF rule. Use dedicated test keys and redact their values from evidence.
+
+To undo this CDN configuration, remove only the timer's cache rule, purge only
+the timer hostname and verify repeated GIF requests return `DYNAMIC` without
+`Age`, with invalid keys still returning 403. Preserve other hosts' rules. If
+purge fails after rule removal, complete the host purge separately; rule removal
+alone does not confirm cached copies are gone.
+
 ### Email playback limits
 
 A GIF contains a finite sequence of frames and cannot fetch an updated timer
@@ -313,16 +355,14 @@ takes the render stripe and, where present, the old sibling lock before deletion
 it skips entries whose writer holds either lock. Locks themselves are retained.
 No directory scan or detached shell process runs on an HTTP request.
 
-Run maintenance periodically, for example from `/etc/cron.d/timer-gif-cache`:
-
-```cron
-# GIF and abandoned temporary files; all partitions
-*/15 * * * * www-data php -r "require '/var/www/timer/src/CacheManager.php'; CacheManager::cleanup('/var/cache/timer-gif', 86400, 3600);"
-# UID deadlines more than 400 days past their deadline
-30 3 * * * www-data php -r "require '/var/www/timer/src/UidStore.php'; echo json_encode(UidStore::cleanup('/var/cache/timer-gif/uid', 34560000)), PHP_EOL;"
-# Old API key counters
-0 3 * * * www-data php -r "require '/var/www/timer/src/ApiKeyAuth.php'; ApiKeyAuth::cleanupCounters();"
-```
+Install the complete [cron template](ops/timer-gif-cache.cron) as
+`/etc/cron.d/timer-gif-cache`, adjusting paths and the PHP binary. It runs GIF
+cleanup every 15 minutes, rate-limit cleanup every five minutes, and counter
+and UID maintenance daily. Prepare its log with ownership/modes that permit
+the scheduled user to append; capture stdout/stderr and each nonzero job exit
+with its job name and UTC timestamp. Successful cache/rate-limit/counter jobs
+are silent; UID cleanup prints JSON. The failure handler can itself exit zero,
+so check the recorded job status rather than only the wrapper's exit code.
 
 Custom retention (arguments are cache directory, GIF TTL, temporary-file TTL;
 both TTLs must be positive seconds):
@@ -331,9 +371,7 @@ both TTLs must be positive seconds):
 php -r "require '/var/www/timer/src/CacheManager.php'; CacheManager::cleanup('/var/cache/timer-gif', 86400, 3600);"
 ```
 
-Use the complete [cron template](ops/timer-gif-cache.cron), adjusting the
-application path and PHP binary. It also retains rate-limit and old-counter
-maintenance. Do not run `find -mtime` or another deletion job on `uid/`;
+Do not run `find -mtime` or another deletion job on `uid/`;
 use `UidStore::cleanup($baseDir, $retentionSeconds)` instead, with a minimum
 retention of 86400 seconds (one day), default 34560000 seconds (400 days). It
 compares the stored deadline, never mtime, and returns `removed`, `skipped` and
@@ -379,6 +417,25 @@ HIT and HIT-304 do not charge generation quota. Storage failures return
 can consume a generation: quota, UID storage and cache are separate operations.
 
 ## Operations
+
+### Maintenance monitoring
+
+Monitoring is installation configuration maintained outside this repository.
+Connect nonzero cron exits, UID file counts, inode/disk utilization, growing
+`invalid` counts and repeated `deferred_v2` to recorded alert thresholds.
+The verified setup runs the monitor hourly, saves its log inode/read offset
+atomically and reads only new error markers. Reset the offset on inode change
+or truncation, and ignore stale dated markers. With `copytruncate` rotation,
+read the active log rather than replaying archives; resetting state or copying
+a fresh marker into the log can alert again. This is position-based deduplication,
+not permanent deduplication of message text.
+
+Configure independent notification channels with separate error handling and
+timeouts so failure of one does not prevent delivery to another. Keep credentials
+outside the served tree and logs. Test a new error, repeated read, copytruncate,
+new error after rotation, threshold alarm and one failed delivery channel.
+Record delivery results and recipients privately. See
+[rollout checks](ops/ROLLOUT.md#verify-after-deployment) before reopening traffic.
 
 ### Throughput expectations
 
@@ -441,8 +498,10 @@ and uses that run's exact commit SHA, rejecting a stale run if `main` has advanc
 same gate and only deploy `main`. External integration is a separate operator
 check, not a skipped-success replacement for local endpoint tests.
 
-This gates the GitHub Actions deploy path. Disable or coordinate independent
-server pull jobs and other deployment paths before rollout. Final acceptance
+This gates the GitHub Actions deploy path. Keep automatic server pull disabled;
+the coordinated procedure also requires backups, a maintenance/drain window,
+code/cron replacement and an operator FPM reload before traffic resumes.
+The workflow replaces code; it does not perform those operator steps. Final acceptance
 also requires a green runtime run on the completed changes and deployment checks
 for PHP-FPM, Caddy, filesystem permissions and CDN behavior.
 

@@ -54,8 +54,11 @@ independent GIF decoding. A failing regression blocks deployment.
 
 Deployment runs only through manual workflow_dispatch. The deploy workflow
 calls the reusable test workflow for PHP 8.4 and 8.5, waits
-for success and deploys the same SHA. Keep other deployment paths coordinated
-with this gate. Do not push or deploy without task authorization.
+for success and deploys the same SHA, rejecting stale runs if main advances.
+Keep automatic pull disabled. Follow ops/ROLLOUT.md for backups, drain,
+coordinated code/cron replacement and operator FPM reload before reopening
+traffic; the workflow only replaces code. Do not push or deploy without task
+authorization.
 
 See README.md for manual setup and Caddy routing. This version reads keys.json
 from the project directory; serve only the documented public routes. Keep keys,
@@ -68,10 +71,18 @@ Active timers share renders by variant and time bucket, including absolute and
 UID deadlines. The stored UID deadline is separate from GIF caching. A later
 bucket can require another charged generation; reopening is not guaranteed free.
 Origin rate limiting occurs before the filesystem cache and can return 429 on
-a HIT. CF-Connecting-IP is used only for trusted Cloudflare peers.
+a filesystem HIT. CF-Connecting-IP is used only for trusted Cloudflare peers.
 
 Shared-cache headers describe freshness; verify actual CDN rules and query key
-handling independently. A finite GIF cannot refresh an already open email.
+handling independently per installation. README.md documents a recommended,
+deployment-verified Cloudflare configuration: only timer-host GET/HEAD GIF entry
+routes with timer parameters, full unsorted query key, Edge/Browser respect
+origin, 400–599 no-store. Active TTL is bounded by bucket/deadline and effective
+seconds (up to 120; active preview up to 5); finished timers including previews
+use 86400 s immutable. CDN HITs skip origin authentication, limiter and
+generation accounting. Revoking a key requires a timer-host purge; copies in
+clients remain. CDN rollback removes only the timer rule, purges only its host
+and verifies DYNAMIC. A finite GIF cannot refresh an already open email.
 Mail clients and image proxies require their own compatibility checks.
 
 UID scope is API key + uidCampaign + uid. CLI cleanup removes v2 and legacy
@@ -89,3 +100,11 @@ from the centered layout. Cache v2 uses 64 retained render stripes and explicit
 CLI retention; no maxMb ceiling. Quota, UID and cache are separate operations.
 Follow ops/ROLLOUT.md and ops/timer-gif-cache.cron for coordinated code/cron
 changes, offline legacy lock migration, FPM reload and rollback limitations.
+The cron template logs stdout/stderr and nonzero job exits by name/time; success
+is silent except UID JSON, and a failure handler can itself exit zero. Provision
+the writable log, copytruncate rotation and monitor outside the repository.
+The verified monitor runs hourly with atomic inode/offset state, stale-marker
+filtering and position-based deduplication; reset offsets on rotation/truncation.
+Connect job errors and UID/inode/disk thresholds to independent notification
+channels and test delivery, deduplication, rotation and one-channel failure.
+Keep credentials and installation details out of public documentation.
