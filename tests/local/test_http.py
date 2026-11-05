@@ -256,19 +256,57 @@ class Preview(Endpoint):
                     self.assertEqual(plain[1]["etag"], image[1]["etag"])
                     self.assertEqual("HIT", image[1]["x-cache"])
 
+    preview_variants = ({}, {"width": 800, "height": 300, "seconds": 8},
+                        {"seconds": "", "duration": 20})
+
+    def preview_with_clock(self):
+        s = Sandbox()
+        self.addCleanup(s.close)
+        index = s.app / "index.php"
+        source = index.read_text()
+        marker = "require_once __DIR__ . '/src/Presets.php';"
+        self.assertEqual(1, source.count(marker))
+        index.write_text(source.replace(marker, marker + "\nrequire_once __DIR__ . '/src/RenderSpec.php'; RenderSpec::$clock = fn() => (int)file_get_contents(__DIR__ . '/clock.txt');"))
+        clock = s.app / "clock.txt"
+        clock.write_text("1800000000")
+        s.start()
+        return s, clock
+
     def test_preview_equivalent_entries(self):
-        for values in ({}, {"width": 800, "height": 300, "seconds": 8},
-                       {"seconds": "", "duration": 20}):
+        s, clock = self.preview_with_clock()
+        # Both the boundary and the interior of the effective 3s/5s buckets.
+        for now in (1800000000, 1800000001):
+            for values in self.preview_variants:
+                with self.subTest(now=now, values=values):
+                    s.reset()
+                    clock.write_text(str(now))
+                    params = {"preset": "dark-boxes", "evergreen": "2h", "seconds": 3, **values}
+                    first = s.request("equivalent-flag", {**params, **self.entries[0]})
+                    second = s.request("equivalent-key", {**params, **self.entries[1]})
+                    self.gif(first)
+                    self.gif(second)
+                    self.assertEqual(first[2], second[2])
+                    self.assertEqual(first[1]["etag"], second[1]["etag"])
+                    self.assertEqual("MISS", first[1]["x-cache"])
+                    self.assertEqual("HIT", second[1]["x-cache"])
+
+    def test_preview_equivalent_entries_across_bucket(self):
+        s, clock = self.preview_with_clock()
+        for values in self.preview_variants:
             with self.subTest(values=values):
-                self.s.reset()
-                first = self.get({**self.entries[0], **values}, "flag")
-                second = self.get({**self.entries[1], **values}, "key")
+                s.reset()
+                params = {"preset": "dark-boxes", "evergreen": "2h", "seconds": 3, **values}
+                clock.write_text("1799999999")
+                first = s.request("boundary-flag", {**params, **self.entries[0]})
+                clock.write_text("1800000000")
+                second = s.request("boundary-key", {**params, **self.entries[1]})
                 self.gif(first)
                 self.gif(second)
                 self.assertEqual(first[2], second[2])
                 self.assertEqual(first[1]["etag"], second[1]["etag"])
                 self.assertEqual("MISS", first[1]["x-cache"])
-                self.assertEqual("HIT", second[1]["x-cache"])
+                # Active renders share a cache entry only within their bucket.
+                self.assertEqual("MISS", second[1]["x-cache"])
 
     def test_preview_flag_selects_demo(self):
         plain = self.get({"_preview": 1, "key": "", "width": 800, "height": 300, "seconds": 8})
