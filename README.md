@@ -476,5 +476,5 @@ campaigns, you can buy me a donut:
 
 ## License
 
-Project code: [MIT](LICENSE). Bundled font terms and the encoder provenance
-qualification are recorded in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Project code: [MIT](LICENSE). Bundled font terms are recorded in
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

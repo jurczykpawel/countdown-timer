@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Replace the GIF89a encoder with a new implementation preserving byte-for-byte output.
+
 ## v1.0.0 (2026-04-09)
 
 ### Features

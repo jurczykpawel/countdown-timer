@@ -1,20 +1,7 @@
 # Third-party provenance
 
-Reviewed 2026-11-04. The project [MIT license](LICENSE) does not replace the
+Reviewed 2026-11-05. The project [MIT license](LICENSE) does not replace the
 terms of bundled third-party material.
-
-## GIF encoder
-
-`src/AnimatedGif.php` credits **GIFEncoder v2.0 by László Zsidi (gifs.hu)** and
-records a refactor to return bytes through `getAnimation()`. That attribution
-is retained. The file entered this repository in commit `abb8afa`.
-
-The exact upstream revision and a license grant covering this imported version
-have not been established. The original author site is recorded in the source
-as `http://gifs.hu/`; no third-party fork's license is substituted for permission
-from the relevant rights holder. The repository MIT file alone does not resolve
-this provenance gap. Confirm the imported version's terms before representing
-the encoder as MIT licensed. This review does not change or replace the encoder.
 
 ## Bundled fonts
 

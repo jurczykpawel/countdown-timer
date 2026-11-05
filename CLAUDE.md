@@ -18,7 +18,7 @@ index.php            # Landing page (no params) or GIF generation
 landing.html         # Preset demos and parameter docs
 src/
   CountdownTimer.php # GIF rendering and layout
-  AnimatedGif.php    # GIF89a encoder; see THIRD_PARTY_NOTICES.md
+  AnimatedGif.php    # GIF89a encoder
   CacheManager.php   # Filesystem cache and response headers
   RateLimiter.php    # File-based client IP limiter (30 req/min)
   Presets.php        # Named visual presets
