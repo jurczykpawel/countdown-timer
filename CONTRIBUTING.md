@@ -34,6 +34,11 @@ CI scans push/PR changes with TruffleHog (`verified,unknown` results); weekly
 and manual runs scan all fetched branch and tag history. GitHub secret scanning
 and push protection are enabled, and Dependabot checks GitHub Actions weekly.
 
+When Dependabot bumps the pinned `trufflesecurity/trufflehog` action SHA, it
+does not update the scanner binary pinned by `with.version` in
+`.github/workflows/secret-scan.yml`. Raise `version` (and the `# vX.Y.Z`
+comment) by hand in the same PR so the action and binary stay in step.
+
 ## Adding a Preset
 
 1. Add entry to `src/Presets.php` PRESETS array
