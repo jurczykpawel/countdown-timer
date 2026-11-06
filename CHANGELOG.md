@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add TruffleHog secret scanning for push/PR changes and weekly/manual full-history scans, plus weekly GitHub Actions updates through Dependabot.
 - Add a reusable Cloudflare cache-rule JSON with dashboard/API setup, host-only purge and rollback instructions.
 - Add a configurable maintenance monitor, private env template, dry-run checks and a deployment-from-scratch path.
 - Align the maintenance cron template with job-error logging and document monitor rotation, deduplication and independent notification channels.

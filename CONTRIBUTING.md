@@ -28,6 +28,12 @@ PHP 8.4 and 8.5, then deploy the same SHA. Keep automatic server pull disabled
 and follow [rollout and rollback](ops/ROLLOUT.md) for backups, drain, cron and
 FPM reload. A push alone does not trigger this deployment workflow.
 
+## Secret Scanning
+
+CI scans push/PR changes with TruffleHog (`verified,unknown` results); weekly
+and manual runs scan all fetched branch and tag history. GitHub secret scanning
+and push protection are enabled, and Dependabot checks GitHub Actions weekly.
+
 ## Adding a Preset
 
 1. Add entry to `src/Presets.php` PRESETS array
